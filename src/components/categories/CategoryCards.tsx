@@ -56,8 +56,9 @@ const CategoryCard: React.FC<CategoryCardProps> = ({ category }) => {
               hover: { opacity: 1, y: 0 },
             }}
             transition={{ duration: 0.3, delay: 0.1 }}
+            className="sm:opacity-100 sm:translate-y-0" // Added this class
           >
-            <Link href={`/nominees/${category.id}`} passHref>
+            <Link href={`/nomineepage/${category.id}`} passHref>
               <motion.a
                 className="text-award-gold font-bold text-sm inline-flex items-center"
                 whileHover={{ x: 5 }}
