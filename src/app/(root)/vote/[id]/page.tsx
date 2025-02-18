@@ -41,7 +41,7 @@ const VotePage: React.FC = () => {
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
-      className="min-h-screen bg-gradient-to-br from-[#0D0D1F] via-[#1A1A3A] to-[#2D2D5A] text-white flex items-center justify-center p-4"
+      className="min-h-screen bg-zinc-100 text-white flex items-center justify-center p-4"
     >
       <div className="max-w-4xl w-full">
         <AnimatePresence mode="wait">
@@ -51,10 +51,10 @@ const VotePage: React.FC = () => {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -20 }}
-              className="bg-award-blue/10 border border-award-gold/20 rounded-lg p-8 shadow-lg"
+              className="bg-black border border-award-gold/20 rounded-lg p-8 shadow-lg"
             >
               <h1 className="text-3xl md:text-4xl text-award-gold mb-4 font-cinzel">{nominee.category}</h1>
-              <p className="text-award-silver mb-6 font-poppins">Select your nominee and confirm your choice!</p>
+              <p className="text-award-silver mb-6 font-poppins">Nominee selected please confirm your choice!</p>
 
               <div className="flex flex-col md:flex-row gap-8 items-center mb-8">
                 <motion.div
@@ -101,7 +101,7 @@ const VotePage: React.FC = () => {
               initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.9 }}
-              className="bg-award-blue/10 border border-award-gold/20 rounded-lg p-8 shadow-lg text-center"
+              className="bg-black/90 border border-award-gold/20 rounded-lg p-8 shadow-lg text-center"
             >
               <motion.div
                 initial={{ scale: 0 }}
@@ -110,6 +110,7 @@ const VotePage: React.FC = () => {
               >
                 <CheckCircle className="w-24 h-24 text-green-500 mx-auto mb-6" />
               </motion.div>
+              
               <h2 className="text-3xl font-bold text-award-gold mb-4 font-cinzel">Thank you for voting!</h2>
               <p className="text-xl text-award-silver mb-6 font-poppins">
                 You voted for {nominee.name} in the category: {nominee.category}
