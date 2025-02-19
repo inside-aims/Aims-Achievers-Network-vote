@@ -1,9 +1,8 @@
 "use client"
 
-import { Card } from "../ui/card"
 import { motion } from "framer-motion"
 import Link from "next/link"
-
+import { Card } from "../ui/card"
 interface NomineeProps {
   name: string
   role: string
