@@ -66,6 +66,9 @@ module.exports = {
         cinzel: ["var(--font-cinzel)"],
         poppins: ["var(--font-poppins)"],
         sans: ["var(--font-poppins)"],
+        outward: ["var(--font-outward-block"],  
+        // outward: ['OutwardBlock', 'sans-serif'],
+
       },
       keyframes: {
         "accordion-down": {

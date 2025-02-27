@@ -14,6 +14,12 @@
   }
 }
 
+@font-face {
+  font-family: 'outward-block';
+  src: url('/fonts/ttf/outward-block.ttf') format('truetype');
+}
+
+
 body {
   color: var(--foreground);
   background: var(--background);
