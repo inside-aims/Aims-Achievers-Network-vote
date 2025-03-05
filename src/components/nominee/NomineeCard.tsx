@@ -15,26 +15,26 @@ export function NomineeCard({ name, role, image, website }: NomineeProps) {
           {/* Left section with image */}
           <div className="w-[45%] bg-zinc-200">
             <div className="relative h-full w-full overflow-hidden">
-              <img src={image || "/placeholder.svg"} alt="" className="h-full w-full object-cover grayscale" />
+              <img src={image || "/placeholder.svg"} alt="" className="h-full w-full object-cover object-top" />
             </div>
           </div>
 
           {/* Right section with red accent */}
           <div className="relative flex-1">
             {/* Red geometric accent */}
-            <div className="absolute right-0 top-0 w-24 h-24 bg-red-600" />
+            <div className="absolute right-0 top-0 w-24 h-24 bg-gray-600" />
 
             {/* Content */}
             <div className="relative z-10 flex flex-col justify-between h-full">
               <div className="space-y-1">
                 <h3 className="text-2xl font-medium tracking-tight">{name}</h3>
-                <p className="text-sm text-zinc-400">{role}</p>
+                <p className="text-sm text-award-gold">{role}</p>
               </div>
 
               {/* Bottom section with logo and website */}
               <div className="space-y-3">
                 <div className="w-8 h-8">
-                  <svg viewBox="0 0 24 24" className="text-red-600" fill="currentColor">
+                  <svg viewBox="0 0 24 24" className="text-gray-600" fill="currentColor">
                     <path d="M12 2L2 19.7778H22L12 2Z" />
                   </svg>
                 </div>

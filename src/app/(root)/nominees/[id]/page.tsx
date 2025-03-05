@@ -1,9 +1,11 @@
 "use client"
 
 import { motion } from "framer-motion"
+import { useState } from "react"
 import { Header } from "@/components/nominee/Header"
 import { NomineeCard } from "@/components/nominee/NomineeCard"
 import { Button } from "@/components/ui/nomineebutton"
+import NominationModal from "@/components/nominee/NominationModal"
 import Link from "next/link"
 
 const nominees = [
@@ -32,18 +34,22 @@ const nominees = [
 ]
 
 export default function NomineesPage() {
+  const [isOpen, setIsOpen] = useState(false) // Track modal state
+
   return (
     <div className="min-h-screen bg-zinc-100 text-white">
       <main className="py-16">
         <Header />
         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="container mx-auto px-4">
-          <div className="flex justify-center mb-8">
-            <Link href="/nominate/best-innovator" passHref>
-              <Button className="bg-award-gold text-black hover:bg-award-gold/80 font-bold py-2 px-4 rounded">
-                Nominate Someone
-              </Button>
-            </Link>
-          </div>
+        <div className="flex flex-col items-center justify-center">
+      {/* Nominate Button */}
+      <Button className="bg-award-gold text-black px-6 py-3 rounded mb-10" onClick={() => setIsOpen(true)}>
+        Nominate Someone
+      </Button>
+
+      {/* Show Modal Only When isOpen is True */}
+      {isOpen && <NominationModal setIsOpen={setIsOpen} />}
+    </div>
           <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
             {nominees.map((nominee, index) => (
               <motion.div
