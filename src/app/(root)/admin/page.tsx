@@ -1,30 +1,41 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import { motion } from "framer-motion"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/admintabs"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/admincard"
-import { NomineeVerification } from "@/components/admin/NomineeVerification"
-import { CategoryManagement } from "@/components/admin/CategoryManagement"
-import { NomineeManagement } from "@/components/admin/NomineeManagement"
-import { AnalyticsChart } from "@/components/admin/AnalyticChart"
-import { Button } from "@/components/ui/adminbutton"
-import { useRouter } from "next/navigation"
+import { useState } from "react";
+import { motion } from "framer-motion";
+import {
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger,
+} from "@/components/ui/admintabs";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/admincard";
+import { NomineeVerification } from "@/components/admin/NomineeVerification";
+import { CategoryManagement } from "@/components/admin/CategoryManagement";
+import { NomineeManagement } from "@/components/admin/NomineeManagement";
+import { AnalyticsChart } from "@/components/admin/AnalyticChart";
+import { Button } from "@/components/ui/adminbutton";
+import { useRouter } from "next/navigation";
 
 export default function AdminDashboard() {
-  const [isAuthenticated, setIsAuthenticated] = useState(false)
-  const router = useRouter()
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const router = useRouter();
 
   // In a real application, you would check for authentication here
   // For this example, we'll use a simple state to simulate authentication
   const handleLogin = () => {
-    setIsAuthenticated(true)
-  }
+    setIsAuthenticated(true);
+  };
 
   const handleLogout = () => {
-    setIsAuthenticated(false)
-    router.push("/")
-  }
+    setIsAuthenticated(false);
+    router.push("/");
+  };
 
   if (!isAuthenticated) {
     return (
@@ -32,23 +43,38 @@ export default function AdminDashboard() {
         <Card className="w-[350px]">
           <CardHeader>
             <CardTitle>Admin Login</CardTitle>
-            <CardDescription>Please log in to access the admin dashboard.</CardDescription>
+            <CardDescription>
+              Please log in to access the admin dashboard.
+            </CardDescription>
           </CardHeader>
           <CardContent>
-            <Button onClick={handleLogin} className="w-full">
+            <motion.button
+            onClick={handleLogin}
+              className="text-award-gold font-medium text-sm px-3 py-1 border border-award-gold rounded-md
+                       hover:bg-award-gold hover:text-black transition-all w-full"
+            >
+              Vote
+            </motion.button>
+            {/* <Button onClick={handleLogin} className="w-full">
               Login
-            </Button>
+            </Button> */}
           </CardContent>
         </Card>
       </div>
-    )
+    );
   }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#0D0D1F] via-[#1A1A3A] to-[#2D2D5A] text-white p-8">
-      <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
+      <motion.div
+        initial={{ opacity: 0, y: -20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5 }}
+      >
         <div className="flex justify-between items-center mb-8">
-          <h1 className="text-3xl font-bold text-award-gold font-cinzel">Admin Dashboard</h1>
+          <h1 className="text-3xl font-bold text-award-gold font-cinzel">
+            Admin Dashboard
+          </h1>
           <Button onClick={handleLogout} variant="outline">
             Logout
           </Button>
@@ -72,8 +98,5 @@ export default function AdminDashboard() {
         </Tabs>
       </motion.div>
     </div>
-  )
+  );
 }
-
-
-
