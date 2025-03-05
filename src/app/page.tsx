@@ -7,7 +7,7 @@ import { categories } from "@/data/categories"
 export default function Home() {
   return (
 <>
-<div className="min-h-screen bg-gradient-to-br from-[#000000] via-[#000000] to-[#2e2701] text-white">
+<div className="min-h-screen bg-zinc-900">
       <main className="container mx-auto px-4 py-16">
         <motion.h1
           initial={{ opacity: 0, y: -20 }}
