@@ -1,5 +1,6 @@
 import { Card } from "../ui/card";
 import { motion } from "framer-motion";
+import Image from "next/image";
 
 interface NomineeProps {
   name: string;
@@ -16,7 +17,7 @@ export function NomineeCard({ name, role, image, website }: NomineeProps) {
           {/* Left section with image */}
           <div className="w-[45%] bg-zinc-200">
             <div className="relative h-full w-full overflow-hidden">
-              <img
+              <Image
                 src={image || "/placeholder.svg"}
                 alt=""
                 className="h-full w-full object-cover object-top"

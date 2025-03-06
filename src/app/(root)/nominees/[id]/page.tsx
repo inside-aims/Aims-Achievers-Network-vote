@@ -6,7 +6,6 @@ import { Header } from "@/components/nominee/Header"
 import { NomineeCard } from "@/components/nominee/NomineeCard"
 import { Button } from "@/components/ui/nomineebutton"
 import NominationModal from "@/components/nominee/NominationModal"
-import Link from "next/link"
 
 const nominees = [
   {
