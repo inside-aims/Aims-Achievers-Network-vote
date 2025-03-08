@@ -1,6 +1,7 @@
 import { Card } from "../ui/card";
 import { motion } from "framer-motion";
 import Image from "next/image";
+import { useRouter } from "next/navigation";
 
 interface NomineeProps {
   name: string;
@@ -10,6 +11,7 @@ interface NomineeProps {
 }
 
 export function NomineeCard({ name, role, image, website }: NomineeProps) {
+  const router = useRouter()
   return (
     <Card className="relative aspect-[1.58/1] bg-black text-white overflow-hidden">
       <div className="absolute inset-0 p-6 flex flex-col">
@@ -21,6 +23,8 @@ export function NomineeCard({ name, role, image, website }: NomineeProps) {
                 src={image || "/placeholder.svg"}
                 alt=""
                 className="h-full w-full object-cover object-top"
+                height={200}
+                width={200}
               />
             </div>
           </div>
@@ -52,6 +56,7 @@ export function NomineeCard({ name, role, image, website }: NomineeProps) {
                 <motion.button
                   className=" absolute text-award-gold font-medium text-sm px-3 py-1 border border-award-gold rounded-md
                        hover:bg-award-gold hover:text-black transition-all right-0 bottom-5"
+                       onClick={()=> router.push("/vote/1")}
                 >
                   Vote
                 </motion.button>
