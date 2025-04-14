@@ -47,7 +47,7 @@ const CategoryCard: React.FC<CategoryCardProps> = ({ category }) => {
         </p>
 
         {/* View Nominees Button */}
-        <Link href={`/nominees/${category.id}`}>
+        <Link href={`/category/${category.id}/nominees`}>
           <motion.button
             className="text-award-gold font-medium text-sm px-3 py-1 border border-award-gold rounded-md
                        hover:bg-award-gold hover:text-black transition-all"

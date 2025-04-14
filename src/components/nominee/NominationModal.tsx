@@ -3,10 +3,8 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/nomineebutton";
+import { NominationModalProps } from "@/lib/types";
 
-interface NominationModalProps {
-  setIsOpen: (isOpen: boolean) => void;
-}
 
 export default function NominationModal({ setIsOpen }: NominationModalProps) {
   const [nominee, setNominee] = useState({

@@ -1,17 +1,7 @@
 import type React from "react"
 import { motion } from "framer-motion"
 import CategoryCard from "./CategoryCards"
-
-interface Category {
-  id: string
-  name: string
-  image: string
-  description: string
-}
-
-interface CategoryGridProps {
-  categories: Category[] | null
-}
+import { CategoryGridProps } from "@/lib/types"
 
 const CategoryGrid: React.FC<CategoryGridProps> = ({ categories }) => {
   return (
