@@ -123,7 +123,7 @@ const VotePage: React.FC = () => {
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
-      className="min-h-screen bg-zinc-100 text-white flex items-center justify-center p-4"
+      className="min-h-screen bg-black-100 text-white flex items-center justify-center p-4"
     >
       <div className="max-w-4xl w-full">
         <AnimatePresence mode="wait">

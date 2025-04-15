@@ -6,6 +6,7 @@ import CategoryGrid from "@/components/categories/CategoryGrid"
 import { useParams } from "next/navigation"
 import { Category } from "@/lib/types"
 
+
 export default function CategoriesPage() {
   const [categories, setCategories] = useState<Category[]>([])
   const [loading, setLoading] = useState(true)
