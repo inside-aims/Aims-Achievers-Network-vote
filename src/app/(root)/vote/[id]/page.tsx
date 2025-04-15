@@ -20,7 +20,10 @@ import {
 const VotePage: React.FC = () => {
   const { id } = useParams();
   const router = useRouter();
+  // disable any type error
+// eslint-disable-next-line
   const [nominee, setNominee] = useState<any>(null);
+// eslint-disable-next-line
   const [category, setCategory] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [isVoted, setIsVoted] = useState(false);
