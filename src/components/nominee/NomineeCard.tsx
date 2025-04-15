@@ -2,15 +2,12 @@ import { Card } from "../ui/card";
 import { motion } from "framer-motion";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
+import { NomineeCardProps } from "@/lib/types";
 
-interface NomineeProps {
-  name: string;
-  role: string;
-  image: string;
-  website: string;
-}
 
-export function NomineeCard({ name, role, image, website }: NomineeProps) {
+
+const NomineeCard: React.FC<NomineeCardProps> = ({nominee}) => {
+  const { id, name, image, shortcode} = nominee
   const router = useRouter()
   return (
     <Card className="relative aspect-[1.58/1] bg-black text-white overflow-hidden">
@@ -38,7 +35,7 @@ export function NomineeCard({ name, role, image, website }: NomineeProps) {
             <div className="relative z-10 flex flex-col justify-between h-full">
               <div className="space-y-1">
                 <h3 className="text-2xl font-medium tracking-tight">{name}</h3>
-                <p className="text-sm text-award-gold">{role}</p>
+                <p className="text-sm text-award-gold">{shortcode || "Nominee"}</p>
               </div>
 
               {/* Bottom section with logo and website */}
@@ -54,13 +51,13 @@ export function NomineeCard({ name, role, image, website }: NomineeProps) {
                 </div>
 
                 <motion.button
-                  className=" absolute text-award-gold font-medium text-sm px-3 py-1 border border-award-gold rounded-md
+                  className="absolute text-award-gold font-medium text-sm px-3 py-1 border border-award-gold rounded-md
                        hover:bg-award-gold hover:text-black transition-all right-0 bottom-5"
-                       onClick={()=> router.push("/vote/1")}
+                  onClick={() => router.push(`/vote/${id}`)}
                 >
                   Vote
                 </motion.button>
-                <p className="text-xs text-zinc-400">{website}</p>
+                <p className="text-xs text-zinc-400">{shortcode}</p>
               </div>
             </div>
           </div>
@@ -69,3 +66,5 @@ export function NomineeCard({ name, role, image, website }: NomineeProps) {
     </Card>
   );
 }
+
+export default NomineeCard
