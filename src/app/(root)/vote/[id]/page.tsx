@@ -238,7 +238,6 @@ export default function VotePage() {
                 >
                   <div className="relative w-full aspect-square md:aspect-auto md:h-[700px] overflow-hidden rounded-lg bg-gradient z-50">
                     <div className="w-[700px] h-[700px] grid grid-cols-3 grid-rows-3 gap-4 p-4 bg-white/10 backdrop-blur-md rounded-2xl shadow-xl"></div>
-
                     <Image
                       src={
                         nominee.image ||
