@@ -1,131 +1,190 @@
 "use client";
 
-import type React from "react";
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import Image from "next/image";
 import { useParams, useRouter } from "next/navigation";
-import { VoteButton } from "@/components/ui/votebutton";
-import { Input } from "@/components/ui/input";
 import { getSupabaseBrowserClient } from "@/config/client";
-import {
-  Twitter,
-  Facebook,
-  Linkedin,
-  PhoneIcon as WhatsApp,
-  CheckCircle,
-  ArrowLeft,
-} from "lucide-react";
+// import { ChevronDown } from "lucide-react"
+import { GlassCard } from "@/components/ui/glass-card";
+import { AccentBlock } from "@/components/ui/accent-block";
+import { FuturisticButton } from "@/components/ui/futuristic-button";
+import { VoteForm } from "@/components/vote-form";
+import { ConfirmationScreen } from "@/components/ConfirmationScreen";
+import { LoadingSpinner } from "@/components/ui/loading-spinner";
 
-const VotePage: React.FC = () => {
-  const { id } = useParams();
-  const router = useRouter();
-  // disable any type error
-// eslint-disable-next-line
-  const [nominee, setNominee] = useState<any>(null);
-// eslint-disable-next-line
-  const [category, setCategory] = useState<any>(null);
+// Define types for our data
+interface Category {
+  id: string;
+  name: string;
+}
+
+interface Nominee {
+  id: string;
+  name: string;
+  image?: string;
+  shortcode?: string;
+  category: Category;
+}
+
+export default function VotePage() {
+  const [nominee, setNominee] = useState<Nominee | null>(null);
   const [loading, setLoading] = useState(true);
   const [isVoted, setIsVoted] = useState(false);
-  const [email, setEmail] = useState("");
-  const [amount, setAmount] = useState("");
   const [voteCount, setVoteCount] = useState(0);
+  const [error, setError] = useState<string | null>(null);
+
+  const { id } = useParams();
+  const router = useRouter();
 
   useEffect(() => {
     const fetchNomineeData = async () => {
       if (!id) return;
-      
+
       setLoading(true);
-      const supabase = getSupabaseBrowserClient();
-      
-      // Fetch nominee with related category data
-      const { data: nomineeData, error: nomineeError } = await supabase
-        .from("nominee")
-        .select("*, category:categoryID(*)")
-        .eq("id", id)
-        .single();
-      
-      if (nomineeError) {
-        console.error("Error fetching nominee:", nomineeError);
-        setLoading(false);
-        return;
-      }
-      
-      if (nomineeData) {
-        setNominee(nomineeData);
-        setCategory(nomineeData.category);
-        
-        // Fetch vote count for this nominee - sum the numberOfVotes
-        const { data: voteData, error: voteError } = await supabase
-          .from("vote")
-          .select("numberOfVotes")
-          .eq("nomineeID", id);
-        
-        if (!voteError && voteData) {
-          // Calculate the sum of all numberOfVotes
-          const totalVotes = voteData.reduce((sum, vote) => 
-            sum + (vote.numberOfVotes || 0), 0);
-          setVoteCount(totalVotes);
+      setError(null);
+
+      try {
+        const supabase = getSupabaseBrowserClient();
+
+        // Fetch nominee with related category data
+        const { data: nomineeData, error: nomineeError } = await supabase
+          .from("nominee")
+          .select("*, category:categoryID(*)")
+          .eq("id", id)
+          .single();
+
+        if (nomineeError) {
+          throw new Error(nomineeError.message);
         }
+
+        if (nomineeData) {
+          setNominee(nomineeData as Nominee);
+
+          // Fetch vote count for this nominee - sum the numberOfVotes
+          const { data: voteData, error: voteError } = await supabase
+            .from("vote")
+            .select("numberOfVotes")
+            .eq("nomineeID", id);
+
+          if (voteError) {
+            console.error("Error fetching votes:", voteError);
+          } else if (voteData) {
+            // Calculate the sum of all numberOfVotes
+            const totalVotes = voteData.reduce(
+              (sum, vote) => sum + (vote.numberOfVotes || 0),
+              0
+            );
+            setVoteCount(totalVotes);
+          }
+        }
+      } catch (err) {
+        console.error("Error in data fetching:", err);
+        setError(
+          err instanceof Error ? err.message : "An unknown error occurred"
+        );
+      } finally {
+        setLoading(false);
       }
-      
-      setLoading(false);
     };
 
     fetchNomineeData();
   }, [id]);
 
-  const handleVote = async () => {
+  const handleVote = async (email: string, voteAmount: number) => {
     if (!nominee) return;
-    
-    const supabase = getSupabaseBrowserClient();
-    const voteAmount = amount ? parseInt(amount, 10) : 0;
-    
-    // Record the vote
-    const { error } = await supabase
-      .from("vote")
-      .insert({
+
+    try {
+      const supabase = getSupabaseBrowserClient();
+
+      // Record the vote
+      const { error } = await supabase.from("vote").insert({
         nomineeID: nominee.id,
         referenceID: "ref1",
         numberOfVotes: voteAmount,
+        email: email || null,
       });
-    
-    if (error) {
-      console.error("Error recording vote:", error);
-      return;
-    }
-    
-    setIsVoted(true);
-    // Update the vote count by adding the new votes
-    setVoteCount(prevCount => prevCount + voteAmount);
-  };
 
-  const shareUrl = typeof window !== 'undefined' ? window.location.href : '';
+      if (error) {
+        throw new Error(error.message);
+      }
+
+      setIsVoted(true);
+      // Update the vote count by adding the new votes
+      setVoteCount((prevCount) => prevCount + voteAmount);
+
+      // Could add analytics event here
+    } catch (err) {
+      console.error("Error recording vote:", err);
+      throw err;
+    }
+  };
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-zinc-100 flex items-center justify-center">
-        <div className="text-black text-xl">Loading nominee information...</div>
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="flex flex-col items-center space-y-4">
+          <LoadingSpinner size="lg" />
+          <div className="text-accent-green text-xl">
+            Loading nominee information...
+          </div>
+        </div>
       </div>
     );
   }
 
-  if (!nominee || !category) {
+  if (error || !nominee) {
     return (
-      <div className="min-h-screen bg-zinc-100 flex items-center justify-center">
-        <div className="text-black text-xl">Nominee not found</div>
+      <div className="min-h-screen flex items-center justify-center">
+        <GlassCard className="p-8 max-w-md">
+          <div className="text-xl text-center mb-4">
+            {error || "Nominee not found"}
+          </div>
+          <FuturisticButton
+            onClick={() => router.push("/")}
+            className="w-full"
+            variant="secondary"
+          >
+            Return Home
+          </FuturisticButton>
+        </GlassCard>
       </div>
     );
   }
 
   return (
-    <motion.div
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      exit={{ opacity: 0 }}
-      className="min-h-screen bg-black-100 text-white flex items-center justify-center p-4"
-    >
-      <div className="max-w-4xl w-full">
+    <div className="min-h-screen relative flex items-center justify-center p-4 overflow-hidden">
+      {/* Logo and Navigation */}
+      <header className="absolute top-0 left-0 w-full z-10 p-4 md:p-6">
+        <div className="flex justify-between items-center">
+          <div className="flex items-center space-x-2">
+            {/* Header content removed as per your modification */}
+          </div>
+        </div>
+      </header>
+
+      {/* Accent Blocks */}
+      <AccentBlock position="top-right" color="rgba(0, 255, 128, 0.15)" />
+      <AccentBlock position="bottom-left" color="rgba(0, 255, 128, 0.1)" />
+      <AccentBlock
+        position="custom"
+        customStyle={{
+          top: "30%",
+          right: "15%",
+          width: "200px",
+          height: "300px",
+          backgroundColor: "rgba(0, 255, 128, 0.05)",
+        }}
+      />
+
+      {/* Scroll Indicator */}
+      {/* <div className="hidden md:flex absolute right-6 bottom-12 flex-col items-center space-y-2 text-xs tracking-widest font-display rotate-90 origin-bottom-right">
+        <span className="text-white/70">Scroll down</span>
+        <ChevronDown className="w-4 h-4 text-accent-green -rotate-90" />
+      </div> */}
+
+      {/* Main Content */}
+      <div className="max-w-6xl w-full z-10">
         <AnimatePresence mode="wait">
           {!isVoted ? (
             <motion.div
@@ -133,62 +192,70 @@ const VotePage: React.FC = () => {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -20 }}
-              className="bg-black border border-award-gold/20 rounded-lg p-8 shadow-lg"
+              transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
             >
-              <h1 className="text-3xl md:text-4xl text-award-gold mb-4 font-cinzel">
-                {category.name}
-              </h1>
-              <p className="text-award-silver mb-6 font-poppins">
-                Nominee selected please confirm your choice!
-              </p>
+              <div className="grid md:grid-cols-2 gap-8 md:gap-12">
+                {/* Left Column - Title and Form */}
+                <div className="flex flex-col justify-center">
+                  <motion.h1
+                    className="font-display text-5xl md:text-5xl mb-2 tracking-wider uppercase text-gradient"
+                    initial={{ opacity: 0, y: -20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.5, delay: 0.1 }}
+                  >
+                    COMPSSA X&apos;CLUSIVE
+                    <br />
+                    AWARDS
+                  </motion.h1>
 
-              <div className="flex flex-col md:flex-row gap-8 items-center mb-8">
-                <motion.div
-                  className="relative w-64 h-64 rounded-full overflow-hidden border-4 border-award-gold"
-                >
-                  <Image
-                    src={nominee.image || "/placeholder.svg"}
-                    alt={nominee.name}
-                    layout="fill"
-                    objectFit="cover"
-                  />
-                </motion.div>
-                <div className="text-center md:text-left">
-                  <h2 className="text-2xl text-award-gold mb-2 font-cinzel">
-                    {nominee.name}
-                  </h2>
-                  <p className="text-award-silver mb-4 font-poppins">
-                    {nominee.shortcode || ""}
-                  </p>
-                  <p className="text-sm text-award-silver mb-2 font-poppins">
-                    Current Votes: {voteCount}
-                  </p>
+                  <motion.p
+                    className="text-white/70 mb-8 max-w-md"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    transition={{ duration: 0.5, delay: 0.2 }}
+                  >
+                    Vote for your favorite style nominee and help them win the
+                    prestigious award.
+                  </motion.p>
+
+                  <GlassCard className="p-6 mb-6">
+                    <VoteForm
+                      nomineeName={nominee.name}
+                      categoryName={nominee.category.name}
+                      shortcode={nominee.shortcode}
+                      voteCount={voteCount}
+                      onSubmit={handleVote}
+                    />
+                  </GlassCard>
                 </div>
-              </div>
 
-              <div className="space-y-4 mb-6">
-                <Input
-                  type="email"
-                  placeholder="Enter your email (optional)"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  className="bg-black/50 border-award-gold/20 text-white"
-                />
-                <Input
-                  type="number"
-                  placeholder="Enter amount"
-                  value={amount}
-                  onChange={(e) => setAmount(e.target.value)}
-                  className="bg-black/50 border-award-gold/20 text-white"
-                />
-              </div>
+                {/* Right Column - Image */}
+                <motion.div
+                  className="relative flex items-center justify-center"
+                  initial={{ opacity: 0, scale: 0.95 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  transition={{ duration: 0.7, ease: "easeOut" }}
+                >
+                  <div className="relative w-full aspect-square md:aspect-auto md:h-[700px] overflow-hidden rounded-lg bg-gradient z-50">
+                    <div className="w-[700px] h-[700px] grid grid-cols-3 grid-rows-3 gap-4 p-4 bg-white/10 backdrop-blur-md rounded-2xl shadow-xl"></div>
 
-              <VoteButton
-                onClick={handleVote}
-                className="w-full bg-award-gold hover:bg-award-gold/80 text-black py-3 rounded-lg transition duration-300 ease-in-out transform hover:scale-105"
-              >
-                Vote for {nominee.name}
-              </VoteButton>
+                    <Image
+                      src={
+                        nominee.image ||
+                        "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/Screenshot%202025-04-15%20160359-ygC5ECiyj1PkRod9z1lMsOljf1tpMg.png"
+                      }
+                      alt={nominee.name}
+                      fill
+                      className="object-cover"
+                      sizes="(max-width: 768px) 100vw, 50vw"
+                      priority
+                    />
+
+                    <div className="absolute inset-0 bg-gradient-to-t from-background via-transparent to-transparent" />
+                    <div className="absolute inset-0 bg-gradient-to-r from-background via-transparent to-transparent opacity-50" />
+                  </div>
+                </motion.div>
+              </div>
             </motion.div>
           ) : (
             <motion.div
@@ -196,76 +263,17 @@ const VotePage: React.FC = () => {
               initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.9 }}
-              className="bg-black/90 border border-award-gold/20 rounded-lg p-8 shadow-lg text-center"
+              transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
             >
-              <motion.div
-                initial={{ scale: 0 }}
-                animate={{ scale: 1 }}
-                transition={{ type: "spring", stiffness: 260, damping: 20 }}
-              >
-                <CheckCircle className="w-24 h-24 text-green-500 mx-auto mb-6" />
-              </motion.div>
-
-              <h2 className="text-3xl font-bold text-award-gold mb-4 font-cinzel">
-                Thank you for voting!
-              </h2>
-              <p className="text-xl text-award-silver mb-6 font-poppins">
-                You voted for {nominee.name} in the category: {category.name}
-              </p>
-              <div className="flex justify-center space-x-4 mb-8">
-                <motion.a
-                  whileHover={{ scale: 1.1 }}
-                  whileTap={{ scale: 0.9 }}
-                  href={`https://twitter.com/intent/tweet?text=I just voted for ${nominee.name} in the ${category.name} category!&url=${shareUrl}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-award-gold hover:text-award-gold/80"
-                >
-                  <Twitter />
-                </motion.a>
-                <motion.a
-                  whileHover={{ scale: 1.1 }}
-                  whileTap={{ scale: 0.9 }}
-                  href={`https://www.facebook.com/sharer/sharer.php?u=${shareUrl}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-award-gold hover:text-award-gold/80"
-                >
-                  <Facebook />
-                </motion.a>
-                <motion.a
-                  whileHover={{ scale: 1.1 }}
-                  whileTap={{ scale: 0.9 }}
-                  href={`https://www.linkedin.com/shareArticle?mini=true&url=${shareUrl}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-award-gold hover:text-award-gold/80"
-                >
-                  <Linkedin />
-                </motion.a>
-                <motion.a
-                  whileHover={{ scale: 1.1 }}
-                  whileTap={{ scale: 0.9 }}
-                  href={`https://wa.me/?text=I just voted for ${nominee.name} in the ${category.name} category! ${shareUrl}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-award-gold hover:text-award-gold/80"
-                >
-                  <WhatsApp />
-                </motion.a>
-              </div>
-              <VoteButton
-                onClick={() => router.back()}
-                className="bg-award-gold hover:bg-award-gold/80 text-black font-bold py-3 px-6 rounded-lg transition duration-300 ease-in-out transform hover:scale-105"
-              >
-                <ArrowLeft className="mr-2" /> Return to Nominees
-              </VoteButton>
+              <ConfirmationScreen
+                nomineeName={nominee.name}
+                categoryName={nominee.category.name}
+                onReturn={() => router.back()}
+              />
             </motion.div>
           )}
         </AnimatePresence>
       </div>
-    </motion.div>
+    </div>
   );
-};
-
-export default VotePage;
+}
