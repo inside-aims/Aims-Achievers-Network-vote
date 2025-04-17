@@ -24,13 +24,23 @@ export default function NomineesPage() {
       
       const { data, error } = await supabase
         .from("nominee")
-        .select("*")
+        .select(`*,
+          vote:vote(numberOfVotes),
+          eventId:event(showVote)
+          `) 
         .eq("categoryID", categoryId)
       
       if (error) {
         console.error("Error fetching nominees:", error)
       } else {
-        setNominees(data || [])
+        console.log(data)
+        // Calculate total votes for each nominee
+        const nomineesWithVotes = data?.map(nominee => ({
+          ...nominee,
+          showVote: nominee.eventId?.showVote || false,
+          votes: nominee.vote?.reduce((sum: number, vote: { numberOfVotes: number }) => sum + (vote.numberOfVotes || 0), 0)
+        })) || []
+        setNominees(nomineesWithVotes)
       }
       setLoading(false)
     }

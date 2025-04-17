@@ -27,6 +27,8 @@ export interface Nominee {
   categoryID: string;
   eventId: number | null;
   image: string | null;
+  votes: number;
+  showVote: boolean;
 }
 
 export interface NomineeCardProps {

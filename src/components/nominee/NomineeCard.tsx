@@ -8,20 +8,15 @@ import { motion } from "framer-motion"
 import Image from "next/image"
 import { useRouter } from "next/navigation"
 import { Eye, EyeOff } from "lucide-react"
+import { Nominee } from "@/lib/types"
 
 interface NomineeCardProps {
-  nominee: {
-    id: string
-    name: string
-    image?: string
-    shortcode?: string
-    votes: number
-  }
+  nominee: Nominee
 }
 
 const NomineeCard: React.FC<NomineeCardProps> = ({ nominee }) => {
   const router = useRouter()
-  const [showVotes, setShowVotes] = useState(false)
+  const [showVotes, setShowVotes] = useState(nominee.showVote)
 
   // Handle case when nominee is undefined
   if (!nominee) {
