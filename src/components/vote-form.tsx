@@ -11,10 +11,11 @@ interface VoteFormProps {
   categoryName: string
   shortcode: string | null
   voteCount: number
+  showVotes: boolean
   onSubmit: (email: string, amount: number) => Promise<void>
 }
 
-export function VoteForm({ nomineeName, categoryName, shortcode, voteCount, onSubmit }: VoteFormProps) {
+export function VoteForm({ nomineeName, categoryName, shortcode, voteCount, onSubmit, showVotes }: VoteFormProps) {
   const [email, setEmail] = useState("")
   const [amount, setAmount] = useState("")
   const [emailError, setEmailError] = useState("")
@@ -60,6 +61,8 @@ export function VoteForm({ nomineeName, categoryName, shortcode, voteCount, onSu
     }
   }
 
+  const displayVotes = showVotes ? voteCount.toString() : "********"
+
   return (
     <div className="max-w-md md:max-w-lg lg:max-w-xl mx-auto p-4 md:p-6 space-y-6">
       <motion.div
@@ -77,7 +80,7 @@ export function VoteForm({ nomineeName, categoryName, shortcode, voteCount, onSu
           </h3>
           <p className="text-white/70 text-xs md:text-sm">{shortcode || ""}</p>
           <p className="text-accent-green text-sm md:text-base mt-2">
-            Current Votes: {voteCount}
+            Current Votes: {displayVotes}
           </p>
         </div>
       </motion.div>

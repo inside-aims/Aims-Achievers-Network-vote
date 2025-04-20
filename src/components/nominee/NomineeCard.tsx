@@ -64,6 +64,7 @@ const NomineeCard: React.FC<NomineeCardProps> = ({ nominee, showVotes, onRequest
                   onClick={() => onRequestVerification(nominee)}
                   className="text-zinc-400 hover:text-award-gold transition-colors"
                   aria-label={showVotes ? "Hide votes" : "Show votes"}
+                  disabled={showVotes}
                 >
                   {showVotes ? <EyeOff size={16} /> : <Eye size={16} />}
                 </button>

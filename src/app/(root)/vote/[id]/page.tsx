@@ -213,6 +213,7 @@ export default function VotePage() {
                       shortcode={nominee.shortcode}
                       voteCount={voteCount}
                       onSubmit={handleVote}
+                      showVotes={nominee.eventId.showVote}
                     />
                   </GlassCard>
                 </div>
