@@ -9,11 +9,14 @@ import NominationModal from "@/components/nominee/NominationModal"
 import { getSupabaseBrowserClient } from "@/config/client"
 import { useParams } from "next/navigation"
 import { Nominee } from "@/lib/types"
+import VerifyModal from "@/components/nominee/VerifyModal"
 
 export default function NomineesPage() {
   const [nominees, setNominees] = useState<Nominee[]>([])
   const [loading, setLoading] = useState(true)
-  const [isOpen, setIsOpen] = useState(false) // Track modal state
+  const [isOpen, setIsOpen] = useState(false)
+  const [verifyModalOpen, setVerifyModalOpen] = useState(false)
+  const [verifyingNominee, setVerifyingNominee] = useState<Nominee | null>(null)
   const params = useParams()
   const categoryId = params.id as string
 
@@ -50,6 +53,28 @@ export default function NomineesPage() {
     }
   }, [categoryId])
 
+  const handleRequestVerification = (nominee: Nominee) => {
+    setVerifyingNominee(nominee)
+    setVerifyModalOpen(true)
+  }
+
+  const handleVerifySuccess = () => {
+    if (!verifyingNominee) return
+
+    setNominees(prevNominees => 
+      prevNominees.map(n => 
+        n.id === verifyingNominee.id ? { ...n, showVote: true } : n
+      )
+    )
+    setVerifyModalOpen(false)
+    setVerifyingNominee(null)
+  }
+
+  const handleVerifyCancel = () => {
+    setVerifyModalOpen(false)
+    setVerifyingNominee(null)
+  }
+
   return (
     <div className="min-h-screen bg-zinc-900 text-white">
       <main className="py-16">
@@ -84,13 +109,24 @@ export default function NomineesPage() {
                   whileHover={{ y: -5 }}
                   className="group"
                 >
-                  <NomineeCard nominee={nominee} />
+                  <NomineeCard
+                    nominee={nominee}
+                    showVotes={nominee.showVote}
+                    onRequestVerification={handleRequestVerification}
+                  />
                 </motion.div>
               ))}
             </div>
           )}
         </motion.div>
       </main>
+      {verifyModalOpen && verifyingNominee && (
+        <VerifyModal
+          setIsOpen={handleVerifyCancel}
+          secretkey={verifyingNominee.secretkey}
+          onVerified={handleVerifySuccess}
+        />
+      )}
     </div>
   )
 }

@@ -9,7 +9,7 @@ import { motion } from "framer-motion"
 interface VoteFormProps {
   nomineeName: string
   categoryName: string
-  shortcode?: string
+  shortcode: string | null
   voteCount: number
   onSubmit: (email: string, amount: number) => Promise<void>
 }
