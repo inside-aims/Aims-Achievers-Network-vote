@@ -61,19 +61,24 @@ export function VoteForm({ nomineeName, categoryName, shortcode, voteCount, onSu
   }
 
   return (
-    <div className="space-y-4">
+    <div className="max-w-md md:max-w-lg lg:max-w-xl mx-auto p-4 md:p-6 space-y-6">
       <motion.div
-        className="mb-6"
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.2 }}
       >
-        <h2 className="text-xl font-display uppercase mb-4 text-accent-green">{categoryName}</h2>
+        <h2 className="text-lg md:text-xl lg:text-2xl font-display uppercase mb-3 text-accent-green">
+          {categoryName}
+        </h2>
 
-        <div className="mb-6">
-          <h3 className="text-2xl font-display mb-1">{nomineeName}</h3>
-          <p className="text-white/70 text-sm">{shortcode || ""}</p>
-          <p className="text-accent-green text-sm mt-2">Current Votes: {voteCount}</p>
+        <div>
+          <h3 className="text-xl md:text-2xl lg:text-3xl font-display mb-1">
+            {nomineeName}
+          </h3>
+          <p className="text-white/70 text-xs md:text-sm">{shortcode || ""}</p>
+          <p className="text-accent-green text-sm md:text-base mt-2">
+            Current Votes: {voteCount}
+          </p>
         </div>
       </motion.div>
 
@@ -83,33 +88,47 @@ export function VoteForm({ nomineeName, categoryName, shortcode, voteCount, onSu
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.3 }}
       >
-        <div>
-          <Input
-            type="email"
-            placeholder="Enter your email (optional)"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            className="bg-black/30 border-white/10 text-white focus:border-accent-green/50"
-            aria-label="Email address"
-          />
-          {emailError && <p className="text-red-500 text-sm mt-1 animate-fade-up">{emailError}</p>}
-        </div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div>
+            <Input
+              type="email"
+              placeholder="Enter your email (optional)"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              className="w-full bg-black/30 border-white/10 text-white focus:border-accent-green/50"
+              aria-label="Email address"
+            />
+            {emailError && (
+              <p className="text-red-500 text-sm mt-1 animate-fade-up">
+                {emailError}
+              </p>
+            )}
+          </div>
 
-        <div>
-          <Input
-            type="number"
-            placeholder="Enter amount"
-            value={amount}
-            onChange={(e) => setAmount(e.target.value)}
-            className="bg-black/30 border-white/10 text-white focus:border-accent-green/50"
-            aria-label="Vote amount"
-            required
-          />
-          {amountError && <p className="text-red-500 text-sm mt-1 animate-fade-up">{amountError}</p>}
+          <div>
+            <Input
+              type="number"
+              placeholder="Enter amount"
+              value={amount}
+              onChange={(e) => setAmount(e.target.value)}
+              className="w-full bg-black/30 border-white/10 text-white focus:border-accent-green/50"
+              aria-label="Vote amount"
+              required
+            />
+            {amountError && (
+              <p className="text-red-500 text-sm mt-1 animate-fade-up">
+                {amountError}
+              </p>
+            )}
+          </div>
         </div>
       </motion.div>
 
-      <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4 }}>
+      <motion.div
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.4 }}
+      >
         <AnimatedGradientButton
           onClick={handleSubmit}
           variant="secondary"
