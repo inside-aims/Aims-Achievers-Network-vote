@@ -46,6 +46,7 @@ export interface VerifyModalProps {
 }
 
 export interface EventDetails {
+  id: number;
   name: string;
   bulkVote: boolean;
   showVote: boolean;

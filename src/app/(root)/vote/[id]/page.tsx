@@ -37,7 +37,9 @@ export default function VotePage() {
         // Fetch nominee with related category data
         const { data: nomineeData, error: nomineeError } = await supabase
           .from("nominee")
-          .select("*, category:categoryID(*), eventId:eventId(name,showVote, bulkVote)")
+          .select(
+            "*, category:categoryID(*), eventId:eventId(id,name,showVote, bulkVote)"
+          )
           .eq("id", id)
           .single();
 
@@ -86,13 +88,15 @@ export default function VotePage() {
       const supabase = getSupabaseBrowserClient();
 
       // Record the vote
-      const {data, error } = await supabase.from("vote").insert({
-        nomineeID: nominee.id,
-        referenceID: ref,
-        numberOfVotes: voteAmount,
-      })
-      .select() // Add .select() here to return the inserted row(s)
-      .single(); // Use .single() if you expect only one row to be inserted and returned
+      const { data, error } = await supabase
+        .from("vote")
+        .insert({
+          nomineeID: nominee.id,
+          referenceID: ref,
+          numberOfVotes: voteAmount,
+        })
+        .select() // Add .select() here to return the inserted row(s)
+        .single(); // Use .single() if you expect only one row to be inserted and returned
 
       if (error) {
         throw new Error(error.message);

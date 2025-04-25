@@ -114,7 +114,7 @@ export function VoteForm({ nomineeName, categoryName, shortcode, voteCount, onSu
 
       console.log("Reference: ", reference);
      // TODO: ADD TO VOTE TABLE
-     const data = onSubmit(email, vote , reference )
+     const data = await onSubmit(email, vote , reference )
      return data;
     } catch (error) {
       throw error;
@@ -148,9 +148,9 @@ export function VoteForm({ nomineeName, categoryName, shortcode, voteCount, onSu
           .promise(
             processData(paystackData.reference),
             {
-              loading: "Updating votes",
-              success: (data) => `Successfully voted ${data.numberOfVotes}`,
-              error: (err) => `This just happened: ${err.toString()}`,
+              loading: "Updating votes...",
+              success: (data) => `Successfully voted ${data?.numberOfVotes || 'N/A'} votes!`,
+              error: (err) => `Vote update failed: ${err.toString()}. Contact support immediately @ 0558218741`,
             },
             {
               style: {
@@ -177,7 +177,7 @@ export function VoteForm({ nomineeName, categoryName, shortcode, voteCount, onSu
 
     const componentProps = {
       ...config,
-      text: "Pay",
+      text: `Pay GHS ${Number(amount) || 0}`,
       onSuccess: (data: any) => onSuccess(data),
       onClose: onClose,
     };
