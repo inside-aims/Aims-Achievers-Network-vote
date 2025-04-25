@@ -2,6 +2,7 @@ import "@/styles/globals.css"
 import { Cinzel, Poppins } from "next/font/google"
 import type { Metadata } from "next"
 import type React from "react" // Import React
+import { Toaster } from "react-hot-toast";
 
 const cinzel = Cinzel({
   subsets: ["latin"],
@@ -26,7 +27,9 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body className={`${cinzel.variable} ${poppins.variable} font-sans`}>{children}</body>
+      <body className={`${cinzel.variable} ${poppins.variable} font-sans`}>
+        <Toaster />
+        {children}</body>
     </html>
   )
 }

@@ -79,19 +79,20 @@ export default function VotePage() {
     fetchNomineeData();
   }, [id]);
 
-  const handleVote = async (email: string, voteAmount: number) => {
+  const handleVote = async (email: string, voteAmount: number, ref: string) => {
     if (!nominee) return;
 
     try {
       const supabase = getSupabaseBrowserClient();
 
       // Record the vote
-      const { error } = await supabase.from("vote").insert({
+      const {data, error } = await supabase.from("vote").insert({
         nomineeID: nominee.id,
-        referenceID: "ref1",
+        referenceID: ref,
         numberOfVotes: voteAmount,
-        email: email || null,
-      });
+      })
+      .select() // Add .select() here to return the inserted row(s)
+      .single(); // Use .single() if you expect only one row to be inserted and returned
 
       if (error) {
         throw new Error(error.message);
@@ -101,6 +102,8 @@ export default function VotePage() {
       // Update the vote count by adding the new votes
       setVoteCount((prevCount) => prevCount + voteAmount);
 
+      console.log("Vote recorded successfully:", data);
+      return data; // Return the data if needed further in the cod
       // Could add analytics event here
     } catch (err) {
       console.error("Error recording vote:", err);

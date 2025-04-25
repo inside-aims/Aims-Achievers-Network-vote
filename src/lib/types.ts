@@ -15,7 +15,6 @@ export interface CategoryCardProps {
   category: Category;
 }
 
-
 export interface Nominee {
   id: string;
   created_at: string;
@@ -43,7 +42,7 @@ export interface NominationModalProps {
 export interface VerifyModalProps {
   setIsOpen: (isOpen: boolean) => void;
   secretkey: string | null;
-  onVerified: ()=> void;
+  onVerified: () => void;
 }
 
 export interface EventDetails {
