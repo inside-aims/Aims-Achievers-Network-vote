@@ -24,8 +24,8 @@ export function VoteForm({ nomineeName, categoryName, shortcode, voteCount, onSu
   const router = useRouter()
   const [email, setEmail] = useState("")
   const [amount, setAmount] = useState<number>(1)
-  const [emailError, setEmailError] = useState("")
-  const [amountError, setAmountError] = useState("")
+  // const [emailError, setEmailError] = useState("")
+  // const [amountError, setAmountError] = useState("")
   // const [isSubmitting, setIsSubmitting] = useState(false)
 
   if (!paystack_pk) {
@@ -222,11 +222,11 @@ export function VoteForm({ nomineeName, categoryName, shortcode, voteCount, onSu
               className="w-full bg-black/30 border-white/10 text-white focus:border-accent-green/50"
               aria-label="Email address"
             />
-            {emailError && (
+            {/* {emailError && (
               <p className="text-red-500 text-sm mt-1 animate-fade-up">
                 {emailError}
               </p>
-            )}
+            )} */}
           </div>
 
           <div>
@@ -239,11 +239,11 @@ export function VoteForm({ nomineeName, categoryName, shortcode, voteCount, onSu
               aria-label="Vote amount"
               required
             />
-            {amountError && (
+            {/* {amountError && (
               <p className="text-red-500 text-sm mt-1 animate-fade-up">
                 {amountError}
               </p>
-            )}
+            )} */}
           </div>
         </div>
       </motion.div>
