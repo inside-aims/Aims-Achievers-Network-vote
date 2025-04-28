@@ -37,7 +37,9 @@ export default function VotePage() {
         // Fetch nominee with related category data
         const { data: nomineeData, error: nomineeError } = await supabase
           .from("nominee")
-          .select("*, category:categoryID(*), eventId:eventId(name,showVote, bulkVote)")
+          .select(
+            "*, category:categoryID(*), eventId:eventId(id,name,showVote, bulkVote)"
+          )
           .eq("id", id)
           .single();
 
@@ -79,19 +81,22 @@ export default function VotePage() {
     fetchNomineeData();
   }, [id]);
 
-  const handleVote = async (email: string, voteAmount: number) => {
+  const handleVote = async (email: string, voteAmount: number, ref: string) => {
     if (!nominee) return;
 
     try {
       const supabase = getSupabaseBrowserClient();
 
       // Record the vote
-      const { error } = await supabase.from("vote").insert({
-        nomineeID: nominee.id,
-        referenceID: "ref1",
-        numberOfVotes: voteAmount,
-        email: email || null,
-      });
+      const { data, error } = await supabase
+        .from("vote")
+        .insert({
+          nomineeID: nominee.id,
+          referenceID: ref,
+          numberOfVotes: voteAmount,
+        })
+        .select() // Add .select() here to return the inserted row(s)
+        .single(); // Use .single() if you expect only one row to be inserted and returned
 
       if (error) {
         throw new Error(error.message);
@@ -101,6 +106,8 @@ export default function VotePage() {
       // Update the vote count by adding the new votes
       setVoteCount((prevCount) => prevCount + voteAmount);
 
+      console.log("Vote recorded successfully:", data);
+      return data; // Return the data if needed further in the cod
       // Could add analytics event here
     } catch (err) {
       console.error("Error recording vote:", err);
