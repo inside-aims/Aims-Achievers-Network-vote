@@ -154,6 +154,13 @@ export default function VotePage() {
         <div className="flex justify-between items-center">
           <div className="flex items-center space-x-2">
             {/* Header content removed as per your modification */}
+            <FuturisticButton
+              onClick={() => router.back()}
+              className="inline-flex items-center gap-2 text-sm font-medium text-award-gold hover:text-sky-100 transition duration-200"
+              variant="secondary"
+            >
+              back to nominees
+            </FuturisticButton>
           </div>
         </div>
       </header>
