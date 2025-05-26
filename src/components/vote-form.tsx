@@ -1,29 +1,36 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-"use client"
+"use client";
 
-import { useState } from "react"
-import { useRouter } from "next/navigation"
-import { Input } from "@/components/ui/input"
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { Input } from "@/components/ui/input";
 // import { AnimatedGradientButton } from "@/components/ui/animation-gradient-button"
 // import { LoadingSpinner } from "@/components/ui/loading-spinner"
-import { motion } from "framer-motion"
-import toast from "react-hot-toast"
+import { motion } from "framer-motion";
+import toast from "react-hot-toast";
 import { PaystackButton } from "react-paystack";
 
 interface VoteFormProps {
-  nomineeName: string
-  categoryName: string
-  shortcode: string | null
-  voteCount: number
-  showVotes: boolean
-  onSubmit: (email: string, amount: number, ref: string) => Promise<any>
+  nomineeName: string;
+  categoryName: string;
+  shortcode: string | null;
+  voteCount: number;
+  showVotes: boolean;
+  onSubmit: (email: string, amount: number, ref: string) => Promise<any>;
 }
 
-export function VoteForm({ nomineeName, categoryName, shortcode, voteCount, onSubmit, showVotes }: VoteFormProps) {
+export function VoteForm({
+  nomineeName,
+  categoryName,
+  shortcode,
+  voteCount,
+  onSubmit,
+  showVotes,
+}: VoteFormProps) {
   const paystack_pk = process.env.NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY;
-  const router = useRouter()
-  const [email, setEmail] = useState("")
-  const [amount, setAmount] = useState<number>(1)
+  const router = useRouter();
+  const [email, setEmail] = useState("");
+  const [amount, setAmount] = useState<number>(1);
   // const [emailError, setEmailError] = useState("")
   // const [amountError, setAmountError] = useState("")
   // const [isSubmitting, setIsSubmitting] = useState(false)
@@ -75,11 +82,11 @@ export function VoteForm({ nomineeName, categoryName, shortcode, voteCount, onSu
   //   }
   // }
 
-  const processData = async (reference : string) => {
+  const processData = async (reference: string) => {
     let vote = 0;
     try {
       const numAmount = Number(amount);
-      vote = numAmount
+      vote = numAmount;
       // if (numAmount === 20) {
       //   vote = 60;
       // } else if (numAmount === 50) {
@@ -113,9 +120,9 @@ export function VoteForm({ nomineeName, categoryName, shortcode, voteCount, onSu
       });
 
       console.log("Reference: ", reference);
-     // TODO: ADD TO VOTE TABLE
-     const data = await onSubmit(email, vote , reference )
-     return data;
+      // TODO: ADD TO VOTE TABLE
+      const data = await onSubmit(email, vote, reference);
+      return data;
     } catch (error) {
       throw error;
     }
@@ -123,7 +130,7 @@ export function VoteForm({ nomineeName, categoryName, shortcode, voteCount, onSu
 
   const config = {
     reference: new Date().getTime().toString(),
-    email: email,
+    email: email || "kvngnathan8420@gmail.com",
     amount: amount * 100, //Amount is in the country's lowest currency. E.g Kobo, so 20000 kobo = N200
     publicKey: paystack_pk,
     currency: "GHS",
@@ -139,50 +146,52 @@ export function VoteForm({ nomineeName, categoryName, shortcode, voteCount, onSu
     },
   };
 
-    // you can call this function anything
-    const onSuccess = (paystackData : any) => {
-      // Implementation for whatever you want to do with reference and after success call.
-      if (paystackData.status === "success") {
-        toast.success("Payment successful 👍");
-        toast
-          .promise(
-            processData(paystackData.reference),
-            {
-              loading: "Updating votes...",
-              success: (data) => `Successfully voted ${data?.numberOfVotes || 'N/A'} votes!`,
-              error: (err) => `Vote update failed: ${err.toString()}. Contact support immediately @ 0558218741`,
+  // you can call this function anything
+  const onSuccess = (paystackData: any) => {
+    // Implementation for whatever you want to do with reference and after success call.
+    if (paystackData.status === "success") {
+      toast.success("Payment successful 👍");
+      toast
+        .promise(
+          processData(paystackData.reference),
+          {
+            loading: "Updating votes...",
+            success: (data) =>
+              `Successfully voted ${data?.numberOfVotes || "N/A"} votes!`,
+            error: (err) =>
+              `Vote update failed: ${err.toString()}. Contact support immediately @ 0558218741`,
+          },
+          {
+            style: {
+              minWidth: "250px",
             },
-            {
-              style: {
-                minWidth: "250px",
-              },
-              success: {
-                duration: 5000,
-                icon: "🔥",
-              },
-            }
-          )
-          .then(() => {
-            setAmount(1);
-          });
-      }
-    };
+            success: {
+              duration: 5000,
+              icon: "🔥",
+            },
+          }
+        )
+        .then(() => {
+          setAmount(1);
+        });
+    }
+  };
 
-      // you can call this function anything
+  // you can call this function anything
   const onClose = () => {
     // implementation for  whatever you want to do when the Paystack dialog closed.
     toast.error(" 🫣 Oops!! Closed Payment card!");
     router.refresh();
   };
 
-    const componentProps = {
-      ...config,
-      text: `Pay GHS ${Number(amount) || 0}`,
-      onSuccess: (data: any) => onSuccess(data),
-      onClose: onClose,
-    };
+  const componentProps = {
+    ...config,
+    text: `Pay GHS ${Number(amount) || 0}`,
+    onSuccess: (data: any) => onSuccess(data),
+    onClose: onClose,
+  };
 
-  const displayVotes = showVotes ? voteCount.toString() : "********"
+  const displayVotes = showVotes ? voteCount.toString() : "********";
 
   return (
     <div className="max-w-md md:max-w-lg lg:max-w-xl mx-auto p-4 md:p-6 space-y-6">
@@ -199,6 +208,7 @@ export function VoteForm({ nomineeName, categoryName, shortcode, voteCount, onSu
           <h3 className="text-xl md:text-2xl lg:text-3xl font-display mb-1">
             {nomineeName}
           </h3>
+
           <p className="text-white/70 text-xs md:text-sm">{shortcode || ""}</p>
           <p className="text-accent-green text-sm md:text-base mt-2">
             Current Votes: {displayVotes}
@@ -271,11 +281,10 @@ export function VoteForm({ nomineeName, categoryName, shortcode, voteCount, onSu
           )}
         </AnimatedGradientButton> */}
         <PaystackButton
-        className="font-semibold  border-none px-8 py-2 bg-blue-500 hover:bg-blue-400 rounded-full w-full cursor-pointer disabled:cursor-not-allowed disabled:opacity-25 mb-5"
-        
-        {...componentProps}
-      />
+          className="font-semibold  border-none px-8 py-2 bg-blue-500 hover:bg-blue-400 rounded-full w-full cursor-pointer disabled:cursor-not-allowed disabled:opacity-25 mb-5"
+          {...componentProps}
+        />
       </motion.div>
     </div>
-  )
+  );
 }
