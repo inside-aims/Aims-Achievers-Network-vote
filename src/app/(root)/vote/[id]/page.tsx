@@ -148,7 +148,7 @@ export default function VotePage() {
   }
 
   return (
-    <div className="min-h-screen relative flex items-center justify-center p-4 sm:p-6 md:p-8 overflow-hidden">
+    <div className="min-h-screen relative flex items-center justify-center px-4 py-20 sm:p-6 md:p-8 overflow-hidden">
       {/* Logo and Navigation */}
       <header className="absolute top-0 left-0 w-full z-10 p-3 sm:p-4 md:p-6">
         <div className="flex justify-between items-center">

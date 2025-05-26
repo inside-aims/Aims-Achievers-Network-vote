@@ -130,7 +130,7 @@ export function VoteForm({
 
   const config = {
     reference: new Date().getTime().toString(),
-    email: email,
+    email: email || "kvngnathan8420@gmail.com",
     amount: amount * 100, //Amount is in the country's lowest currency. E.g Kobo, so 20000 kobo = N200
     publicKey: paystack_pk,
     currency: "GHS",
