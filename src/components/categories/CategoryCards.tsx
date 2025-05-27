@@ -42,6 +42,11 @@ const CategoryCard: React.FC<CategoryCardProps> = ({ category }) => {
         className="absolute inset-0 flex flex-col justify-end p-4 bg-black bg-opacity-80
                    md:opacity-0 md:hover:opacity-100 transition-opacity duration-300"
       >
+
+<h2 className="text-lg font-semibold text-award-gold font-cinzel md:hidden">
+          {category.name}
+        </h2>
+
         <p className="text-award-silver font-poppins text-xs mb-3 leading-tight">
           {category.description}
         </p>
