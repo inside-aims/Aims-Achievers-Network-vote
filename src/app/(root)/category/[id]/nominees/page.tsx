@@ -82,7 +82,7 @@ export default function NomineesPage() {
         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="container mx-auto px-4">
           <div className="flex flex-col items-center justify-center">
             {/* Nominate Button */}
-            <Button className="bg-award-gold text-black px-6 py-3 rounded mb-10" onClick={() => setIsOpen(true)}>
+            <Button disabled className="bg-award-gold text-black px-6 py-3 rounded mb-10" onClick={() => setIsOpen(true)}>
               Nominate Someone
             </Button>
 

@@ -116,12 +116,11 @@ export default function NominationModal({ setIsOpen, categoryId }: NominationMod
       if (error) {
         console.error('Error inserting nomination:', error);
         toast.error('Error inserting nomination. Try again!');
-        // You might want to show an error message to the user here
+        return;
       }
   
       console.log('Nomination submitted successfully:', data);
       toast.success('Nomination submitted successfully!');
-      // You might want to show a success message to the user here
       setIsOpen(false); // Close modal after successful submission
     } catch (error: any) {
       console.error('Failed to submit nomination:', error);
