@@ -11,8 +11,8 @@ import { AccentBlock } from "@/components/ui/accent-block";
 import { FuturisticButton } from "@/components/ui/futuristic-button";
 import { VoteForm } from "@/components/vote-form";
 import { ConfirmationScreen } from "@/components/ConfirmationScreen";
-import { LoadingSpinner } from "@/components/ui/loading-spinner";
 import { NomineeWithDetails } from "@/lib/types";
+import { DotsSpinner } from "@/components/loaders/Dotspinner";
 
 export default function VotePage() {
   const [nominee, setNominee] = useState<NomineeWithDetails | null>(null);
@@ -125,9 +125,8 @@ export default function VotePage() {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="flex flex-col items-center space-y-4">
-          <LoadingSpinner size="lg" />
-          <div className="text-accent-green text-xl">
-            Loading nominee information...
+          <div className="text-center flex justify-center items-center py-10 ">
+            <DotsSpinner size={60} />
           </div>
         </div>
       </div>
