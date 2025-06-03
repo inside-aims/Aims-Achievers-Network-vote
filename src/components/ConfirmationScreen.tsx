@@ -1,9 +1,16 @@
 "use client"
 
 import { motion } from "framer-motion"
-import { Twitter, Facebook, Linkedin, PhoneIcon as WhatsApp, CheckCircle, ArrowLeft } from "lucide-react"
+import {  CheckCircle, ArrowLeft } from "lucide-react"
 import { GlassCard } from "@/components/ui/glass-card"
 import { FuturisticButton } from "@/components/ui/futuristic-button"
+import WhatsApp from "@/components/icons/WhatsappIcon"
+import Twitter from "@/components/icons/Twitter"
+import Facebook from "@/components/icons/Facebook"
+import LinkedIn from "@/components/icons/Linkedin"
+
+
+
 
 interface ConfirmationScreenProps {
   nomineeName: string
@@ -59,7 +66,7 @@ export function ConfirmationScreen({ nomineeName, categoryName, onReturn }: Conf
           rel="noopener noreferrer"
           className="text-white/70 hover:text-accent-green transition-colors"
         >
-          <Linkedin className="w-5 h-5" />
+          <LinkedIn className="w-5 h-5" />
         </motion.a>
         <motion.a
           whileHover={{ scale: 1.1 }}
