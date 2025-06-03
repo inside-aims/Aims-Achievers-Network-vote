@@ -6,7 +6,7 @@ export async function POST(request: Request) {
 
     const smsData = {
       sender: "AIMSNetwork",
-      message: `Thank you for voting for ${nomineeName} in the ${categoryName} category. Your vote has been recorded successfully!`,
+      message: `Thank you for voting for ${nomineeName} in the ${categoryName} category. Your vote has been recorded successfully! Continue voting to support your favorite nominees.`,
       recipients: [phone],
     };
 
