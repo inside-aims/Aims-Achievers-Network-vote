@@ -81,7 +81,12 @@ export default function VotePage() {
     fetchNomineeData();
   }, [id]);
 
-  const handleVote = async (email: string, voteAmount: number, ref: string) => {
+  const handleVote = async (
+    email: string,
+    phone: string,
+    voteAmount: number,
+    ref: string
+  ) => {
     if (!nominee) return;
 
     try {
@@ -94,6 +99,8 @@ export default function VotePage() {
           nomineeID: nominee.id,
           referenceID: ref,
           numberOfVotes: voteAmount,
+          phoneNumber: phone,
+          email: email,
         })
         .select() // Add .select() here to return the inserted row(s)
         .single(); // Use .single() if you expect only one row to be inserted and returned
@@ -106,7 +113,6 @@ export default function VotePage() {
       // Update the vote count by adding the new votes
       setVoteCount((prevCount) => prevCount + voteAmount);
 
-      console.log("Vote recorded successfully:", data);
       return data; // Return the data if needed further in the cod
       // Could add analytics event here
     } catch (err) {
