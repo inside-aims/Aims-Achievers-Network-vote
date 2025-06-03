@@ -16,7 +16,12 @@ interface VoteFormProps {
   shortcode: string | null;
   voteCount: number;
   showVotes: boolean;
-  onSubmit: (email: string, amount: number, ref: string) => Promise<any>;
+  onSubmit: (
+    email: string,
+    phone: string,
+    voteAmount: number,
+    ref: string
+  ) => Promise<any>;
 }
 
 export function VoteForm({
@@ -30,6 +35,8 @@ export function VoteForm({
   const paystack_pk = process.env.NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY;
   const router = useRouter();
   const [email, setEmail] = useState("");
+  const [phone, setPhone] = useState("");
+  const [phoneError, setPhoneError] = useState("");
   const [amount, setAmount] = useState<number>(1);
   // const [emailError, setEmailError] = useState("")
   // const [amountError, setAmountError] = useState("")
@@ -37,52 +44,33 @@ export function VoteForm({
 
   if (!paystack_pk) {
     toast.error(
-      "Paystack public key is not set. Please contact support @ pycodecamp47@gmail.com."
+      "Paystack public key is not set. Please contact support @ a.i.m.s582024@gmail.com."
     );
     return null;
   }
 
-  // Form validation
-  // const validateForm = () => {
-  //   let isValid = true
+  const validatePhone = (phoneNumber: string): boolean => {
+    // Remove any non-digit characters
+    const digitsOnly = phoneNumber.replace(/\D/g, "");
+    // Check if it's exactly 10 digits and starts with 0 or 233
+    const isValid = /^(0|233)\d{9,10}$/.test(digitsOnly);
 
-  //   // Email validation (optional field)
-  //   if (email && !/^\S+@\S+\.\S+$/.test(email)) {
-  //     setEmailError("Please enter a valid email address")
-  //     isValid = false
-  //   } else {
-  //     setEmailError("")
-  //   }
+    if (!isValid) {
+      setPhoneError(
+        "Please enter a valid 10-digit phone number (e.g., 0551234567)"
+      );
+      return false;
+    }
 
-  //   // Amount validation (required field)
-  //   if (!amount) {
-  //     setAmountError("Please enter an amount")
-  //     isValid = false
-  //   } else if (Number.parseInt(amount, 10) <= 0) {
-  //     setAmountError("Amount must be greater than 0")
-  //     isValid = false
-  //   } else {
-  //     setAmountError("")
-  //   }
-
-  //   return isValid
-  // }
-
-  // const handleSubmit = async () => {
-  //   if (!validateForm()) return
-
-  //   setIsSubmitting(true)
-  //   try {
-  //     await onSubmit(email, Number.parseInt(amount, 10))
-  //   } catch (error) {
-  //     console.error("Error submitting vote:", error)
-  //     // Handle error state
-  //   } finally {
-  //     setIsSubmitting(false)
-  //   }
-  // }
+    setPhoneError("");
+    return true;
+  };
 
   const processData = async (reference: string) => {
+    if (!validatePhone(phone)) {
+      return;
+    }
+
     let vote = 0;
     try {
       const numAmount = Number(amount);
@@ -102,27 +90,62 @@ export function VoteForm({
       // }
 
       // toast
-      toast(`Initiated the ${numAmount}gh for ${vote} votes package 🎨`, {
-        duration: 6000,
-        position: "bottom-center",
+      // toast(`Initiated the ${numAmount}gh for ${vote} votes package 🎨`, {
+      //   duration: 6000,
+      //   position: "bottom-center",
 
-        // styling
-        className: "bg-black/60 text-white",
-        style: {
-          border: "1px solid #ebd534",
-          padding: "16px",
-          color: "#fff",
-          backgroundColor: "#21211f",
-        },
+      //   // styling
+      //   className: "bg-black/60 text-white",
+      //   style: {
+      //     border: "1px solid #ebd534",
+      //     padding: "16px",
+      //     color: "#fff",
+      //     backgroundColor: "#21211f",
+      //   },
 
-        // Custom Icon
-        icon: "👏",
-      });
+      //   // Custom Icon
+      //   icon: "👏",
+      // });
 
-      console.log("Reference: ", reference);
-      // TODO: ADD TO VOTE TABLE
-      const data = await onSubmit(email, vote, reference);
-      return data;
+
+      try {
+        const data = await onSubmit(email, phone, vote, reference);
+
+        // Send SMS after successful vote
+        try {
+          await fetch('/api/v2/sendsms', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              phone: phone,
+              nomineeName: nomineeName,
+              categoryName: categoryName
+            })
+          });
+
+          /*
+          Response Body:  {
+  data: [
+    {
+      id: '35a9c370-31ff-432a-8295-5745b0cdfd09',
+      recipient: '233558218741'
+    }
+  ],
+  status: 'success'
+}
+          */
+
+        } catch (smsError) {
+          console.error('Failed to send SMS:', smsError);
+          // Don't fail the whole process if SMS fails
+        }
+
+        return data;
+      } catch (error) {
+        throw error;
+      }
     } catch (error) {
       throw error;
     }
@@ -130,7 +153,7 @@ export function VoteForm({
 
   const config = {
     reference: new Date().getTime().toString(),
-    email: email || "kvngnathan8420@gmail.com",
+    email: email || `${phone}@gmail.com`,
     amount: amount * 100, //Amount is in the country's lowest currency. E.g Kobo, so 20000 kobo = N200
     publicKey: paystack_pk,
     currency: "GHS",
@@ -141,7 +164,11 @@ export function VoteForm({
           variable_name: "Nominee Code",
           value: shortcode,
         },
-        // To pass extra metadata, add an object with the same fields as above
+        {
+          display_name: "Phone Number",
+          variable_name: "phone_number",
+          value: phone,
+        },
       ],
     },
   };
@@ -155,7 +182,7 @@ export function VoteForm({
         .promise(
           processData(paystackData.reference),
           {
-            loading: "Updating votes...",
+            loading: "Processing your vote...",
             success: (data) =>
               `Successfully voted ${data?.numberOfVotes || "N/A"} votes!`,
             error: (err) =>
@@ -224,36 +251,66 @@ export function VoteForm({
       >
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
+            <label
+              htmlFor="email"
+              className="block text-sm font-medium text-gray-300 mb-1"
+            >
+              Email (Optional)
+            </label>
             <Input
+              id="email"
               type="email"
-              placeholder="Enter your email (optional)"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="w-full bg-black/30 border-white/10 text-white focus:border-accent-green/50"
-              aria-label="Email address"
+              placeholder="your@email.com"
+              className="bg-black/30 border-gray-700 text-white placeholder:text-gray-500 focus:ring-2 focus:ring-award-gold focus:border-gray-400/30"
             />
-            {/* {emailError && (
-              <p className="text-red-500 text-sm mt-1 animate-fade-up">
-                {emailError}
-              </p>
-            )} */}
           </div>
 
           <div>
+            <label
+              htmlFor="phone"
+              className="block text-sm font-medium text-gray-300 mb-1"
+            >
+              Phone Number <span className="text-red-500">*</span>
+            </label>
             <Input
+              id="phone"
+              type="tel"
+              value={phone}
+              onChange={(e) => {
+                setPhone(e.target.value);
+                // Clear error when user starts typing
+                if (phoneError) setPhoneError("");
+              }}
+              onBlur={() => validatePhone(phone)}
+              placeholder="0551234567"
+              required
+              className={`bg-black/30 border-gray-700 text-white placeholder:text-gray-500 focus:ring-2 focus:ring-award-gold focus:border-gray-400/30 ${
+                phoneError ? "border-red-500" : ""
+              }`}
+            />
+            {phoneError && (
+              <p className="mt-1 text-sm text-red-500">{phoneError}</p>
+            )}
+          </div>
+
+          <div>
+            <label
+              htmlFor="amount"
+              className="block text-sm font-medium text-gray-300 mb-1"
+            >
+              Amount (GHS) <span className="text-red-500">*</span>
+            </label>
+            <Input
+              id="amount"
               type="number"
-              placeholder="Enter amount"
+              min="1"
               value={amount}
               onChange={({ target: { value } }) => setAmount(Number(value))}
-              className="w-full bg-black/30 border-white/10 text-white focus:border-accent-green/50"
-              aria-label="Vote amount"
+              className="bg-black/30 border-gray-700 text-white placeholder:text-gray-500 focus:ring-2 focus:ring-award-gold focus:border-gray-400/30"
               required
             />
-            {/* {amountError && (
-              <p className="text-red-500 text-sm mt-1 animate-fade-up">
-                {amountError}
-              </p>
-            )} */}
           </div>
         </div>
       </motion.div>
