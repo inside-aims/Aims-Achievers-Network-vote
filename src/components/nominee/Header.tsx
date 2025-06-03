@@ -7,7 +7,7 @@ export function Header() {
       animate={{ opacity: 1, y: 0 }}
       className="container mx-auto text-center mb-16"
     >
-      <h1 className="text-4xl font-bold tracking-tight sm:text-6xl text-award-gold mb-4">Award Nominees 2024</h1>
+      <h1 className="text-4xl font-bold tracking-tight sm:text-6xl text-award-gold mb-4">Award Nominees 2025</h1>
       <p className="text-lg text-zinc-600">Celebrating excellence and innovation in our industry</p>
     </motion.header>
   )

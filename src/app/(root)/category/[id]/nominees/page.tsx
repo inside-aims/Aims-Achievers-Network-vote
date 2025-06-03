@@ -4,7 +4,7 @@ import { motion } from "framer-motion"
 import { useEffect, useState } from "react"
 import { Header } from "@/components/nominee/Header"
 import NomineeCard from "@/components/nominee/NomineeCard"
-import { Button } from "@/components/ui/nomineebutton"
+//import { Button } from "@/components/ui/nomineebutton"
 import NominationModal from "@/components/nominee/NominationModal"
 import { getSupabaseBrowserClient } from "@/config/client"
 import { useParams } from "next/navigation"
@@ -82,9 +82,9 @@ export default function NomineesPage() {
         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="container mx-auto px-4">
           <div className="flex flex-col items-center justify-center">
             {/* Nominate Button */}
-            <Button disabled className="bg-award-gold text-black px-6 py-3 rounded mb-10" onClick={() => setIsOpen(true)}>
+            {/* <Button disabled className="bg-award-gold text-black px-6 py-3 rounded mb-10" onClick={() => setIsOpen(true)}>
               Nominate Someone
-            </Button>
+            </Button> */}
 
             {/* Show Modal Only When isOpen is True */}
             {isOpen && <NominationModal setIsOpen={setIsOpen} categoryId={categoryId} />}
