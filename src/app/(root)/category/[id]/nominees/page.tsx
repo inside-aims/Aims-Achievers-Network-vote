@@ -10,6 +10,7 @@ import { getSupabaseBrowserClient } from "@/config/client"
 import { useParams } from "next/navigation"
 import { Nominee } from "@/lib/types"
 import VerifyModal from "@/components/nominee/VerifyModal"
+import { DotsSpinner } from "@/components/loaders/Dotspinner"
 
 export default function NomineesPage() {
   const [nominees, setNominees] = useState<Nominee[]>([])
@@ -32,6 +33,7 @@ export default function NomineesPage() {
           eventId:event(showVote)
           `) 
         .eq("categoryID", categoryId)
+        .eq("approved", true)
       
       if (error) {
         console.error("Error fetching nominees:", error)
@@ -91,8 +93,8 @@ export default function NomineesPage() {
           </div>
           
           {loading ? (
-            <div className="text-center py-10 text-white">
-              <p>Loading nominees...</p>
+            <div className=" flex justify-center items-center py-10 ">
+              <DotsSpinner size={60}/>
             </div>
           ) : nominees.length === 0 ? (
             <div className="text-center py-10 text-black">

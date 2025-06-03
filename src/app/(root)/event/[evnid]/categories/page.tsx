@@ -5,6 +5,7 @@ import { motion } from "framer-motion"
 import CategoryGrid from "@/components/categories/CategoryGrid"
 import { useParams } from "next/navigation"
 import { Category } from "@/lib/types"
+import { DotsSpinner } from "@/components/loaders/Dotspinner"
 
 
 export default function CategoriesPage() {
@@ -48,7 +49,9 @@ export default function CategoriesPage() {
           Award Categories
         </motion.h1>
         {loading ? (
-          <div className="text-center text-award-silver">Loading categories...</div>
+          <div className="text-center flex justify-center items-center py-10 ">
+                        <DotsSpinner size={60}/>
+                      </div>
         ) : (
           <CategoryGrid categories={categories} />
         )}
