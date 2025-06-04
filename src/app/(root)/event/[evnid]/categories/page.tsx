@@ -1,41 +1,35 @@
-"use client"
-import { useEffect, useState } from "react"
-import { getSupabaseBrowserClient } from '@/config/client'
-import { motion } from "framer-motion"
-import CategoryGrid from "@/components/categories/CategoryGrid"
-import { useParams } from "next/navigation"
-import { Category } from "@/lib/types"
-import { DotsSpinner } from "@/components/loaders/Dotspinner"
-
+"use client";
+import { useEffect, useState } from "react";
+import { motion } from "framer-motion";
+import CategoryGrid from "@/components/categories/CategoryGrid";
+import { useParams } from "next/navigation";
+import { DotsSpinner } from "@/components/loaders/Dotspinner";
+import { getCategoriesByEventId } from "@/app/actions";
+import { Category } from "@/lib/types";
 
 export default function CategoriesPage() {
-  const [categories, setCategories] = useState<Category[]>([])
-  const [loading, setLoading] = useState(true)
-  const params = useParams()
-  const eventId = params.evnid
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [loading, setLoading] = useState(true);
+  const params = useParams();
+  const eventId = params.evnid as string;
 
   useEffect(() => {
     const fetchCategories = async () => {
-      setLoading(true)
-      const supabase = getSupabaseBrowserClient()
-      
-      const { data, error } = await supabase
-        .from("category")
-        .select("*")
-        .eq("eventID", eventId)
-      
-      if (error) {
-        console.error("Error fetching categories:", error)
-      } else {
-        setCategories(data || [])
-      }
-      setLoading(false)
-    }
+      if (!eventId) return;
 
-    if (eventId) {
-      fetchCategories()
-    }
-  }, [eventId])
+      setLoading(true);
+      try {
+        const data = await getCategoriesByEventId(eventId);
+        setCategories(data);
+      } catch (error) {
+        console.error("Error fetching categories:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchCategories();
+  }, [eventId]);
 
   return (
     <div className="min-h-screen bg-zinc-900">
@@ -49,13 +43,13 @@ export default function CategoriesPage() {
           Award Categories
         </motion.h1>
         {loading ? (
-          <div className="text-center flex justify-center items-center py-10 ">
-                        <DotsSpinner size={60}/>
-                      </div>
+          <div className="text-center flex justify-center items-center py-10">
+            <DotsSpinner size={60} />
+          </div>
         ) : (
           <CategoryGrid categories={categories} />
         )}
       </main>
     </div>
-  )
+  );
 }

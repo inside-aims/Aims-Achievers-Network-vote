@@ -1,87 +1,79 @@
-"use client"
+"use client";
 
-import { motion } from "framer-motion"
-import { useEffect, useState } from "react"
-import { Header } from "@/components/nominee/Header"
-import NomineeCard from "@/components/nominee/NomineeCard"
+import { motion } from "framer-motion";
+import { useEffect, useState } from "react";
+import { Header } from "@/components/nominee/Header";
+import NomineeCard from "@/components/nominee/NomineeCard";
 //import { Button } from "@/components/ui/nomineebutton"
-import NominationModal from "@/components/nominee/NominationModal"
-import { getSupabaseBrowserClient } from "@/config/client"
-import { useParams } from "next/navigation"
-import { Nominee } from "@/lib/types"
-import VerifyModal from "@/components/nominee/VerifyModal"
-import { DotsSpinner } from "@/components/loaders/Dotspinner"
+import NominationModal from "@/components/nominee/NominationModal";
+import { useParams } from "next/navigation";
+import { Nominee } from "@/lib/types";
+import VerifyModal from "@/components/nominee/VerifyModal";
+import { DotsSpinner } from "@/components/loaders/Dotspinner";
+import { getNomineesByCategoryId } from "@/app/actions";
 
 export default function NomineesPage() {
-  const [nominees, setNominees] = useState<Nominee[]>([])
-  const [loading, setLoading] = useState(true)
-  const [isOpen, setIsOpen] = useState(false)
-  const [verifyModalOpen, setVerifyModalOpen] = useState(false)
-  const [verifyingNominee, setVerifyingNominee] = useState<Nominee | null>(null)
-  const params = useParams()
-  const categoryId = params.id as string
+  const [nominees, setNominees] = useState<Nominee[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [isOpen, setIsOpen] = useState(false);
+  const [verifyModalOpen, setVerifyModalOpen] = useState(false);
+  const [verifyingNominee, setVerifyingNominee] = useState<Nominee | null>(
+    null
+  );
+  const params = useParams();
+  const categoryId = params.id as string;
 
   useEffect(() => {
     const fetchNominees = async () => {
+      if (!categoryId) return
+      
       setLoading(true)
-      const supabase = getSupabaseBrowserClient()
-      
-      const { data, error } = await supabase
-        .from("nominee")
-        .select(`*,
-          vote:vote(numberOfVotes),
-          eventId:event(showVote)
-          `) 
-        .eq("categoryID", categoryId)
-        .eq("approved", true)
-      
-      if (error) {
+      try {
+        const data = await getNomineesByCategoryId(categoryId)
+        setNominees(data)
+      } catch (error) {
         console.error("Error fetching nominees:", error)
-      } else {
-        console.log(data)
-        // Calculate total votes for each nominee
-        const nomineesWithVotes = data?.map(nominee => ({
-          ...nominee,
-          showVote: nominee.eventId?.showVote || false,
-          votes: nominee.vote?.reduce((sum: number, vote: { numberOfVotes: number }) => sum + (vote.numberOfVotes || 0), 0)
-        })) || []
-        setNominees(nomineesWithVotes)
+      } finally {
+        setLoading(false)
       }
-      setLoading(false)
     }
 
     if (categoryId) {
-      fetchNominees()
+      fetchNominees();
     }
-  }, [categoryId])
+  }, [categoryId]);
 
   const handleRequestVerification = (nominee: Nominee) => {
-    setVerifyingNominee(nominee)
-    setVerifyModalOpen(true)
-  }
+    setVerifyingNominee(nominee);
+    setVerifyModalOpen(true);
+  };
 
   const handleVerifySuccess = () => {
-    if (!verifyingNominee) return
+    if (!verifyingNominee) return;
 
-    setNominees(prevNominees => 
-      prevNominees.map(n => 
+    setNominees((prevNominees) =>
+      prevNominees.map((n) =>
         n.id === verifyingNominee.id ? { ...n, showVote: true } : n
       )
-    )
-    setVerifyModalOpen(false)
-    setVerifyingNominee(null)
-  }
+    );
+    setVerifyModalOpen(false);
+    setVerifyingNominee(null);
+  };
 
   const handleVerifyCancel = () => {
-    setVerifyModalOpen(false)
-    setVerifyingNominee(null)
-  }
+    setVerifyModalOpen(false);
+    setVerifyingNominee(null);
+  };
 
   return (
     <div className="min-h-screen bg-zinc-900 text-white">
       <main className="py-16">
         <Header />
-        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="container mx-auto px-4">
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          className="container mx-auto px-4"
+        >
           <div className="flex flex-col items-center justify-center">
             {/* Nominate Button */}
             {/* <Button disabled className="bg-award-gold text-black px-6 py-3 rounded mb-10" onClick={() => setIsOpen(true)}>
@@ -89,12 +81,14 @@ export default function NomineesPage() {
             </Button> */}
 
             {/* Show Modal Only When isOpen is True */}
-            {isOpen && <NominationModal setIsOpen={setIsOpen} categoryId={categoryId} />}
+            {isOpen && (
+              <NominationModal setIsOpen={setIsOpen} categoryId={categoryId} />
+            )}
           </div>
-          
+
           {loading ? (
             <div className=" flex justify-center items-center py-10 ">
-              <DotsSpinner size={60}/>
+              <DotsSpinner size={60} />
             </div>
           ) : nominees.length === 0 ? (
             <div className="text-center py-10 text-black">
@@ -130,6 +124,5 @@ export default function NomineesPage() {
         />
       )}
     </div>
-  )
+  );
 }
-

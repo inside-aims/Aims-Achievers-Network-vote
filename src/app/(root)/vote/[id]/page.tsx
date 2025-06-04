@@ -38,7 +38,7 @@ export default function VotePage() {
         const { data: nomineeData, error: nomineeError } = await supabase
           .from("nominee")
           .select(
-            "*, category:categoryID(*), eventId:eventId(id,name,showVote, bulkVote)"
+            "*, category:categoryid(*), eventId:eventId(id,name,showVote, bulkVote)"
           )
           .eq("id", id)
           .single();
