@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { NextRequest, NextResponse } from 'next/server';
-import { getServerSupabase } from '@/config/server';
+import { NextRequest, NextResponse } from "next/server";
+import { getServerSupabase } from "@/config/server";
+import { mapNetworkToProvider, normalizeMsisdn } from "@/lib/utils";
 
 // Define the structure for our session state
 interface UssdSessionState {
@@ -24,16 +25,20 @@ export async function POST(req: NextRequest) {
     newSession,
     msisdn,
     userData, // This is the user's input from the USSD menu
+    network,
   } = await req.json();
+  console.log(network);
 
-  let message = '';
+  let message = "";
   let continueSession = true; // Default to true, set to false to end session
 
   // Initialize session if new or not found
   if (newSession || !ussdSessions[sessionID]) {
-    ussdSessions[sessionID] = [{
-      level: 0, // Start at level 0 for main menu
-    }];
+    ussdSessions[sessionID] = [
+      {
+        level: 0, // Start at level 0 for main menu
+      },
+    ];
   }
 
   const sessionHistory = ussdSessions[sessionID];
@@ -45,13 +50,15 @@ export async function POST(req: NextRequest) {
   try {
     if (newSession) {
       // Level 0: Main Menu (Initial interaction)
-      message = "Welcome to AIMS Achievers Network Services Portal.\n1. E-Voting";
+      message =
+        "Welcome to AIMS Achievers Network Services Portal.\n1. E-Voting";
       nextState.level = 1; // Move to level 1 (awaiting E-Voting selection)
     } else {
       // Handle user input based on current level
       switch (currentState.level) {
         case 1: // E-Voting Menu
-          if (userData === '1') { // User selected "E-Voting"
+          if (userData === "1") {
+            // User selected "E-Voting"
             message = "Enter Nominee Code:";
             nextState.level = 2; // Move to level 2 (awaiting nominee code)
           } else {
@@ -72,24 +79,33 @@ export async function POST(req: NextRequest) {
           } else {
             // Fetch nominee and their category from the database
             const { data: nomineeDetails, error: nomineeError } = await supabase
-              .from('nominee')
-              .select(`
+              .from("nominee")
+              .select(
+                `
                 id,
                 name,
-                category:categoryID (name)
-              `)
-              .eq('shortcode', nomineeCode)
+                category:categoryid (name)
+              `
+              )
+              .eq("shortcode", nomineeCode)
               .single(); // Expecting a single nominee for a unique shortcode
 
+            console.log("Nominee Details Error ", nomineeError, nomineeDetails);
             if (nomineeError || !nomineeDetails) {
-              console.error('Error fetching nominee or nominee not found:', nomineeError?.message);
-              message = "Invalid Nominee Code. Please check the code and try again. To restart, please redial the USSD code.";
+              console.error(
+                "Error fetching nominee or nominee not found:",
+                nomineeError?.message
+              );
+              message =
+                "Invalid Nominee Code. Please check the code and try again. To restart, please redial the USSD code.";
               continueSession = false; // End session
             } else {
               // Type guard to ensure category is not an array and has a name
-              const category = nomineeDetails.category as unknown as { name: string } | null;
+              const category = nomineeDetails.category as unknown as {
+                name: string;
+              } | null;
 
-              if (category && typeof category.name === 'string') {
+              if (category && typeof category.name === "string") {
                 nextState.nomineeId = nomineeDetails.id;
                 nextState.nomineeName = nomineeDetails.name;
                 nextState.categoryName = category.name;
@@ -97,8 +113,12 @@ export async function POST(req: NextRequest) {
                 message = `Confirm your vote for ${nextState.nomineeName} in the ${nextState.categoryName} category.\n1. Yes\n2. No`;
                 nextState.level = 3; // Move to level 3 (Confirmation)
               } else {
-                console.error('Nominee found but category details are missing or invalid:', nomineeDetails);
-                message = "Error retrieving nominee details. Please try again later. To restart, please redial the USSD code.";
+                console.error(
+                  "Nominee found but category details are missing or invalid:",
+                  nomineeDetails
+                );
+                message =
+                  "Error retrieving nominee details. Please try again later. To restart, please redial the USSD code.";
                 continueSession = false; // End session
               }
             }
@@ -106,24 +126,89 @@ export async function POST(req: NextRequest) {
           break;
 
         case 3: // Confirmation
-          if (userData === '1') { // User confirmed "Yes"
-            // TODO: Implement payment logic here in the future
-            // For now, just acknowledge and end
-            message = `Thank you for voting for ${currentState.nomineeName}! Payment integration is coming soon.`;
-            continueSession = false; // End session
-          } else if (userData === '2') { // User selected "No"
+          if (userData === "1") {
+            message =
+              "Enter the amount you want to vote with (e.g., 1 for GHS 1):";
+            nextState.level = 4; // Move to next level to receive amount
+          } else if (userData === "2") {
             message = "Vote cancelled. Thank you!";
-            continueSession = false; // End session
+            continueSession = false;
           } else {
             message = `Invalid option. Confirm for ${currentState.nomineeName}?\n1. Yes\n2. No`;
-            // Stay on the same level for re-entry
             nextState.level = 3;
           }
           break;
 
+        case 4: // Entered amount
+          const amountGHS = parseFloat(userData);
+          if (isNaN(amountGHS) || amountGHS <= 0) {
+            message = "Invalid amount. Please enter a number greater than 0:";
+            nextState.level = 4;
+            break;
+          }
+
+          const amountPesewas = Math.round(amountGHS * 100); // Convert GHS to pesewas
+          const provider = mapNetworkToProvider(network);
+          const newMsisdn = normalizeMsisdn(msisdn);
+
+          console.log("Provider ", provider)
+          console.log("Msisdn ", newMsisdn)
+          console.log("Amount ", amountPesewas)
+
+          if (!provider) {
+            message =
+              "Unsupported network provider. Please use MTN, AirtelTigo, or Vodafone.";
+            continueSession = false;
+            break;
+          }
+
+          const paystackRes = await fetch(
+            `${process.env.NEXT_PUBLIC_SITE_URL}/api/v2/paystack/charge`,
+            {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify({
+                msisdn: newMsisdn,
+                amount: amountPesewas,
+                provider,
+                nomineeId: currentState.nomineeId,
+                userId: userID,
+              }),
+            }
+          );
+
+          const paystackData = await paystackRes.json();
+
+          console.log("Paystack Data FROM USSD ", paystackData)
+
+          if (
+            paystackData.status &&
+            paystackData.data.status === "pay_offline"
+          ) {
+            console.log("message")
+            message = `${paystackData.data.display_text}. Longer than 30 seconds to popup, please check your approvals.`;
+            //nextState.level = 5; // Optional: move to payment confirmation tracking
+            continueSession = false;
+          } else {
+            message = `Could not initiate payment: ${paystackData.message}`;
+            continueSession = false;
+          }
+          break;
+
+        // case 5: // Payment confirmation tracking
+        // console.log(
+        //   "data ", userData
+        // )
+        //     message = "Payment successful! Thank you for voting.";
+        //     continueSession = false;
+        //   break;
+
         default:
           // Should not happen, but handle unexpected state
-          message = "An error occurred. Please try again by redialing the USSD code.";
+          message =
+            "An error occurred. Please try again by redialing the USSD code.";
           continueSession = false;
           break;
       }
@@ -146,22 +231,24 @@ export async function POST(req: NextRequest) {
       // A more robust system might differentiate between progressing and re-prompting.
 
       // If the level changed or if it's the initial session setup
-      if (nextState.level !== currentState.level || sessionHistory.length === 1 && newSession) {
-         sessionHistory.push(nextState);
+      if (
+        nextState.level !== currentState.level ||
+        (sessionHistory.length === 1 && newSession)
+      ) {
+        sessionHistory.push(nextState);
       } else {
         // If staying on the same level (e.g. invalid input, re-prompting), update the last state
         sessionHistory[sessionHistory.length - 1] = nextState;
       }
       ussdSessions[sessionID] = sessionHistory;
-
     } else {
       // Clear session if the session is ending
       delete ussdSessions[sessionID];
     }
-
   } catch (error: any) {
     console.error("USSD V2 Error:", error);
-    message = "An unexpected error occurred. Please try again by redialing the USSD code.";
+    message =
+      "An unexpected error occurred. Please try again by redialing the USSD code.";
     continueSession = false;
     // Clear session on error
     if (ussdSessions[sessionID]) {
