@@ -59,6 +59,8 @@ export async function POST(req: NextRequest) {
         case 1: // E-Voting Menu
           if (userData === "1") {
             // User selected "E-Voting"
+
+            
             message = "Enter Nominee Code:";
             nextState.level = 2; // Move to level 2 (awaiting nominee code)
           } else {
@@ -147,6 +149,7 @@ export async function POST(req: NextRequest) {
             break;
           }
 
+          const votes = Math.round(amountGHS);
           const amountPesewas = Math.round(amountGHS * 100); // Convert GHS to pesewas
           const provider = mapNetworkToProvider(network);
           const newMsisdn = normalizeMsisdn(msisdn);
@@ -175,6 +178,8 @@ export async function POST(req: NextRequest) {
                 provider,
                 nomineeId: currentState.nomineeId,
                 userId: userID,
+                votesAmount: votes,
+                nomineeName: currentState.nomineeName,
               }),
             }
           );

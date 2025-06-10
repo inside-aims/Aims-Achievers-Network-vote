@@ -74,3 +74,13 @@ export interface NomineeWithDetails {
   image: string;
   category: NomineeCategory;
 }
+
+export interface CustomField {
+  display_name: string;
+  variable_name: string;
+  value: string | number;
+}
+
+export interface PaymentMetadata {
+  custom_fields?: CustomField[];
+}
