@@ -9,6 +9,7 @@ interface UssdSessionState {
   nomineeId?: string;
   nomineeName?: string;
   categoryName?: string;
+  reference?: string;
 }
 
 // Simple in-memory session store (replace with persistent storage for production)
@@ -49,20 +50,45 @@ export async function POST(req: NextRequest) {
 
   try {
     if (newSession) {
-      // Level 0: Main Menu (Initial interaction)
+      // Check for pending OTP
+      const { data: pendingOtp } = await supabase
+      .from('pending_otps')
+      .select('*')
+      .eq('msisdn', msisdn)
+      .eq('status', 'pending')
+      .order('created_at', { ascending: false })
+      .limit(1)
+      .single();
+
+      console.log("Pending OTP ", pendingOtp)
+      if (pendingOtp) {
+      message = "Enter the OTP sent to your phone to complete your vote:";
+      nextState.level = 6; // Reserved level for OTP entry
+      nextState.nomineeId = pendingOtp.nominee_id;
+      nextState.reference = pendingOtp.reference;
+      nextState.nomineeName = pendingOtp.nominee_name;
+      }else{
+        // Level 0: Main Menu (Initial interaction)
       message =
-        "Welcome to AIMS Achievers Network Services Portal.\n1. E-Voting";
-      nextState.level = 1; // Move to level 1 (awaiting E-Voting selection)
+      "Welcome to AIMS Achievers Network Services Portal.\n1. E-Voting";
+    nextState.level = 1; // Move to level 1 (awaiting E-Voting selection)
+      }
+      
     } else {
       // Handle user input based on current level
       switch (currentState.level) {
         case 1: // E-Voting Menu
           if (userData === "1") {
             // User selected "E-Voting"
-
-            
-            message = "Enter Nominee Code:";
-            nextState.level = 2; // Move to level 2 (awaiting nominee code)
+            const isVodafone = network === "VODAFONE"
+            if (isVodafone) {
+              message = "Vodafone payment requires voucher: Please dial *110# to generate a voucher code unless it is your first time voting then still press 1\n1. I already have a voucher";
+              nextState.level = 7; // New level for voucher handling
+              //nextState.pendingAction = 'vote'; // Remember we're in voting flow
+            } else {
+              message = "Enter Nominee Code:";
+              nextState.level = 2;
+            }
           } else {
             message = "Invalid option. Please dial 1 for E-Voting.";
             // Keep the user at the same level to retry or end session
@@ -187,7 +213,7 @@ export async function POST(req: NextRequest) {
           const paystackData = await paystackRes.json();
 
           console.log("Paystack Data FROM USSD ", paystackData)
-
+          nextState.reference = paystackData.data.reference
           if (
             paystackData.status &&
             paystackData.data.status === "pay_offline"
@@ -196,7 +222,34 @@ export async function POST(req: NextRequest) {
             message = `${paystackData.data.display_text}. Longer than 30 seconds to popup, please check your approvals.`;
             //nextState.level = 5; // Optional: move to payment confirmation tracking
             continueSession = false;
-          } else {
+          }else if (paystackData.status && paystackData.data.status === "send_otp" && provider === "vod") {
+            // Check display text if there is any voucher word within it 
+            if (paystackData.data.display_text.toLowerCase().includes("voucher")) {
+              message = "Please enter the voucher you generated to complete the payment.";
+              nextState.level = 6;
+            }else {
+              await supabase.from('pending_otps').insert({
+                msisdn,
+                reference: paystackData.data.reference,
+                nominee_id: currentState.nomineeId,
+                nominee_name: currentState.nomineeName,
+              });
+            
+              message = "An OTP was sent to your phone. Please redial code and enter it to proceed.";
+              continueSession = false;
+            }
+          }else if (paystackData.status && paystackData.data.status === "send_otp" && provider === "mtn") {
+            await supabase.from('pending_otps').insert({
+              msisdn,
+              reference: paystackData.data.reference,
+              nominee_id: currentState.nomineeId,
+              nominee_name: currentState.nomineeName,
+                });
+          
+            message = "An OTP was sent to your phone. Please redial code and enter it to proceed.";
+            continueSession = false;
+          }   
+          else {
             message = `Could not initiate payment: ${paystackData.message}`;
             continueSession = false;
           }
@@ -209,6 +262,62 @@ export async function POST(req: NextRequest) {
         //     message = "Payment successful! Thank you for voting.";
         //     continueSession = false;
         //   break;
+
+        case 6: // Vodafone Voucher/otp Handling
+          if (userData) {
+            const otpCode = userData.trim()
+            const submitOtpRes = await fetch(
+              `${process.env.NEXT_PUBLIC_SITE_URL}/api/v2/paystack/charge/submit-otp`,
+              {
+                method: "POST",
+                headers: {
+                  "Content-Type": "application/json",
+                },
+                body: JSON.stringify({
+                  otp: otpCode,
+                  reference: nextState.reference,
+                }),
+              }
+            );
+
+            const submitOtpData = await submitOtpRes.json();
+
+            console.log("Submit OTP Data FROM USSD ", submitOtpData) 
+            if (submitOtpData.status && submitOtpData.data.status === "pay_offline") {
+              // Mark OTP entry as completed
+              await supabase
+                .from("pending_otps")
+                .update({ status: "completed" })
+                .eq("reference", currentState.reference);
+
+              message = submitOtpData.data.display_text;
+              continueSession = false;
+            }else if(submitOtpData.status && submitOtpData.data.data.status === "requery"){
+               // Mark OTP entry as completed
+               await supabase
+               .from("pending_otps")
+               .update({ status: "completed" })
+               .eq("reference", currentState.reference);
+
+              message = `${submitOtpData.message}. Please re-enter the amount.`;
+              nextState.level = 4;  
+            }            
+            else{
+              message = `Could not submit OTP: ${submitOtpData.message}`;
+              continueSession = false;
+            }                 
+          }
+          break;
+
+        case 7: // Vodafone Voucher Handling
+          if (userData === '1') { // Generate voucher
+            message = "Enter Nominee Code:";
+            nextState.level = 2; // Proceed to nominee selection
+          } else {
+            message = "Invalid option: Generate voucher now (*110#)\n1. I already have a voucher";
+            // Stay on same level
+          }
+          break;
 
         default:
           // Should not happen, but handle unexpected state

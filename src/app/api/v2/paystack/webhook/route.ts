@@ -1,7 +1,7 @@
-import { NextRequest, NextResponse } from 'next/server';
-import crypto from 'crypto';
+import { NextRequest, NextResponse } from "next/server";
+import crypto from "crypto";
 import { getServerSupabase } from "@/config/server";
-import { getMetadataFields } from '@/lib/utils';
+import { getMetadataFields } from "@/lib/utils";
 
 export const config = {
   api: {
@@ -17,67 +17,64 @@ export async function POST(req: NextRequest) {
   const rawText = await req.text();
 
   // Get signature from headers
-  const signature = req.headers.get('x-paystack-signature') || '';
+  const signature = req.headers.get("x-paystack-signature") || "";
 
   // Generate expected signature
   const expectedHash = crypto
-    .createHmac('sha512', secret!)
+    .createHmac("sha512", secret!)
     .update(rawText)
-    .digest('hex');
+    .digest("hex");
 
   if (signature !== expectedHash) {
-    console.warn('Invalid Paystack webhook signature');
-    return NextResponse.json({ status: 'Invalid signature' }, { status: 400 });
+    console.warn("Invalid Paystack webhook signature");
+    return NextResponse.json({ status: "Invalid signature" }, { status: 400 });
   }
 
   let event;
-try {
-  event = JSON.parse(rawText);
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-} catch (err) {
-  console.error('Invalid JSON payload:', rawText);
-  return NextResponse.json({ status: 'Invalid JSON' }, { status: 400 });
-}
+  try {
+    event = JSON.parse(rawText);
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  } catch (err) {
+    console.error("Invalid JSON payload:", rawText);
+    return NextResponse.json({ status: "Invalid JSON" }, { status: 400 });
+  }
   console.log("✅ Verified Paystack Webhook:", event);
 
   // Example: Handle successful payment
-  if (event.event === 'charge.success') {
-     console.log(event.data.metadata.custom_fields)
-     const { nomineeId, votesAmount, phoneNumber, nomineeName } = getMetadataFields(event.data.metadata);
-     const channel = event.data.channel;
+  if (event.event === "charge.success") {
+    console.log(event.data.metadata.custom_fields);
+    const { nomineeId, votesAmount, phoneNumber, nomineeName } =
+      getMetadataFields(event.data.metadata);
+    const channel = event.data.channel;
 
     // TODO: Insert into Supabase or update vote status
     // await supabase.from('votes').insert({ msisdn, amount, nominee_id: nomineeId, reference, status: 'paid' });
-    const { error } = await supabase
-    .from('vote')
-    .insert({
-      referenceID: event.data.reference,
-      numberOfVotes: votesAmount,
-      nomineeID: nomineeId,
-      phoneNumber: phoneNumber,
-      channel: channel,
-    })
+    if (channel === "mobile_money") {
+      const { error } = await supabase.from("vote").insert({
+        referenceID: event.data.reference,
+        numberOfVotes: votesAmount,
+        nomineeID: nomineeId,
+        phoneNumber: phoneNumber,
+        channel: channel,
+      });
 
-    if (error) {
-        console.error('Supabase error:', error);
+      if (error) {
+        console.error("Supabase error:", error);
         return NextResponse.json(
-          { error: 'Failed to record vote' },
+          { error: "Failed to record vote" },
           { status: 500 }
         );
       }
 
-    console.log(`💰 Payment received for nominee ${nomineeName}, amount: ${votesAmount}`);
+      console.log(
+        `💰 Payment received for nominee ${nomineeName}, amount: ${votesAmount}`
+      );
+    }
   }
 
   // Respond 200 OK to prevent retries
-  return NextResponse.json({ status: 'OK' }, { status: 200 });
+  return NextResponse.json({ status: "OK" }, { status: 200 });
 }
-
-
-
-
-
-
 
 // import { NextRequest, NextResponse } from 'next/server';
 
