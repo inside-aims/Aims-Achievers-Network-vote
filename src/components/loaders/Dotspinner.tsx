@@ -8,7 +8,7 @@ export const DotsSpinner = ({ size = 40, className = "" }: { size?: number; clas
           style={{
             width: size * 0.15,
             height: size * 0.15,
-            animation: `pulse 1.4s ease-in-out ${i * 0.16}s infinite both`,
+            animation: `pulse-slow 1.4s ease-in-out ${i * 0.16}s infinite both`,
           }}
         />
       ))}

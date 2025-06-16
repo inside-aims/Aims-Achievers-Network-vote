@@ -60,6 +60,7 @@ export function getMetadataFields(metadata: PaymentMetadata) {
     votesAmount: fields.votes_amount as number | undefined,
     phoneNumber: fields.phone_number as string | undefined,
     nomineeName: fields.nominee_name as string | undefined,
+    categoryName: fields.category_name as string | undefined,
     // Add other fields here if needed
   };
 }

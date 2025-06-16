@@ -80,15 +80,15 @@ export async function POST(req: NextRequest) {
         case 1: // E-Voting Menu
           if (userData === "1") {
             // User selected "E-Voting"
-            const isVodafone = network === "VODAFONE"
-            if (isVodafone) {
-              message = "Vodafone payment requires voucher: Please dial *110# to generate a voucher code unless it is your first time voting then still press 1\n1. I already have a voucher";
-              nextState.level = 7; // New level for voucher handling
-              //nextState.pendingAction = 'vote'; // Remember we're in voting flow
-            } else {
+            // const isVodafone = network === "VODAFONE"
+            // if (isVodafone) {
+            //   message = "Vodafone payment requires voucher: Please dial *110# to generate a voucher code unless it is your first time voting then still press 1\n1. I already have a voucher";
+            //   nextState.level = 7; // New level for voucher handling
+            //   //nextState.pendingAction = 'vote'; // Remember we're in voting flow
+            // } else {
               message = "Enter Nominee Code:";
               nextState.level = 2;
-            }
+            //}
           } else {
             message = "Invalid option. Please dial 1 for E-Voting.";
             // Keep the user at the same level to retry or end session
@@ -206,6 +206,7 @@ export async function POST(req: NextRequest) {
                 userId: userID,
                 votesAmount: votes,
                 nomineeName: currentState.nomineeName,
+                categoryName: currentState.categoryName
               }),
             }
           );
@@ -283,14 +284,14 @@ export async function POST(req: NextRequest) {
             const submitOtpData = await submitOtpRes.json();
 
             console.log("Submit OTP Data FROM USSD ", submitOtpData) 
-            if (submitOtpData.status && submitOtpData.data.status === "pay_offline") {
+            if (submitOtpData.status && submitOtpData.data.data.status === "pay_offline") {
               // Mark OTP entry as completed
               await supabase
                 .from("pending_otps")
                 .update({ status: "completed" })
                 .eq("reference", currentState.reference);
 
-              message = submitOtpData.data.display_text;
+              message = `${submitOtpData.data.data.display_text}. Longer than 30 seconds to popup, please check your approvals.`;
               continueSession = false;
             }else if(submitOtpData.status && submitOtpData.data.data.status === "requery"){
                // Mark OTP entry as completed
