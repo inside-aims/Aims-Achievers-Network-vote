@@ -24,7 +24,7 @@ const CategoryCard: React.FC<CategoryCardProps> = ({ category }) => {
         <Image
           src={category.image || "/placeholder.svg"}
           alt={category.name}
-          layout="fill"
+          fill
           objectFit="cover"
           className="rounded-t-md"
         />

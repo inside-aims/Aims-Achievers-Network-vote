@@ -6,13 +6,15 @@ import { Header } from "@/components/nominee/Header";
 import NomineeCard from "@/components/nominee/NomineeCard";
 //import { Button } from "@/components/ui/nomineebutton"
 import NominationModal from "@/components/nominee/NominationModal";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { Nominee } from "@/lib/types";
 import VerifyModal from "@/components/nominee/VerifyModal";
 import { DotsSpinner } from "@/components/loaders/Dotspinner";
 import { getNomineesByCategoryId } from "@/app/actions";
+import { FuturisticButton } from "@/components/ui/futuristic-button";
 
 export default function NomineesPage() {
+  const router = useRouter();
   const [nominees, setNominees] = useState<Nominee[]>([]);
   const [loading, setLoading] = useState(true);
   const [isOpen, setIsOpen] = useState(false);
@@ -25,18 +27,18 @@ export default function NomineesPage() {
 
   useEffect(() => {
     const fetchNominees = async () => {
-      if (!categoryId) return
-      
-      setLoading(true)
+      if (!categoryId) return;
+
+      setLoading(true);
       try {
-        const data = await getNomineesByCategoryId(categoryId)
-        setNominees(data)
+        const data = await getNomineesByCategoryId(categoryId);
+        setNominees(data);
       } catch (error) {
-        console.error("Error fetching nominees:", error)
+        console.error("Error fetching nominees:", error);
       } finally {
-        setLoading(false)
+        setLoading(false);
       }
-    }
+    };
 
     if (categoryId) {
       fetchNominees();
@@ -67,8 +69,18 @@ export default function NomineesPage() {
 
   return (
     <div className="min-h-screen bg-zinc-900 text-white">
-      <main className="py-16">
-        <Header />
+      <main className="py-10">
+        <div>
+          <FuturisticButton
+            onClick={() => router.back()}
+            className="inline-flex items-center gap-2 text-sm font-medium text-award-gold hover:text-sky-100 transition duration-200 ml-1"
+            variant="secondary"
+          >
+            <span className="hidden md:block">Back to Categories</span>
+            <span className="md:hidden">Back</span>
+          </FuturisticButton>
+          <Header />
+        </div>
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}

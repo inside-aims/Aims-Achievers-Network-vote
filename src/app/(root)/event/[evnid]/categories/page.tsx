@@ -6,8 +6,11 @@ import { useParams } from "next/navigation";
 import { DotsSpinner } from "@/components/loaders/Dotspinner";
 import { getCategoriesByEventId } from "@/app/actions";
 import { Category } from "@/lib/types";
+import { useRouter } from "next/navigation";
+import { FuturisticButton } from "@/components/ui/futuristic-button";
 
 export default function CategoriesPage() {
+  const router = useRouter();
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
   const params = useParams();
@@ -33,15 +36,26 @@ export default function CategoriesPage() {
 
   return (
     <div className="min-h-screen bg-zinc-900">
-      <main className="container mx-auto px-4 py-16">
-        <motion.h1
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5 }}
-          className="text-4xl md:text-5xl text-center text-award-gold mb-12 font-cinzel"
-        >
-          Award Categories
-        </motion.h1>
+      <main className="container mx-auto px-4 py-10">
+        <div>
+          <FuturisticButton
+            onClick={() => router.back()}
+            className="inline-flex items-center gap-2 text-sm font-medium text-award-gold hover:text-sky-100 transition duration-200"
+            variant="secondary"
+          >
+            <span className="hidden md:block">Back to Events</span>
+            <span className="md:hidden">Back</span>
+          </FuturisticButton>
+
+          <motion.h1
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5 }}
+            className="text-4xl md:text-5xl text-center text-award-gold mb-12 font-cinzel"
+          >
+            Award Categories
+          </motion.h1>
+        </div>
         {loading ? (
           <div className="text-center flex justify-center items-center py-10">
             <DotsSpinner size={60} />
