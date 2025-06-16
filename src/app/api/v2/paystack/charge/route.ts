@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 
 export async function POST(req: NextRequest) {
-  const { msisdn, provider = 'mtn', amount, nomineeId, userId, votesAmount, nomineeName } = await req.json();
+  const { msisdn, provider = 'mtn', amount, nomineeId, userId, votesAmount, nomineeName, categoryName } = await req.json();
 
   if (!msisdn || !amount || !nomineeId) {
     console.log("Missing required fields")
@@ -49,6 +49,11 @@ export async function POST(req: NextRequest) {
                 display_name: "Nominee Name",
                 variable_name: "nominee_name",
                 value: nomineeName
+              },
+              {
+                display_name: "Category Name",
+                variable_name: "category_name",
+                value: categoryName
               }
             ]
           },

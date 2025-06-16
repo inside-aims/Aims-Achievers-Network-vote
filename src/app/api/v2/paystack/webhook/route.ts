@@ -43,7 +43,7 @@ export async function POST(req: NextRequest) {
   // Example: Handle successful payment
   if (event.event === "charge.success") {
     console.log(event.data.metadata.custom_fields);
-    const { nomineeId, votesAmount, phoneNumber, nomineeName } =
+    const { nomineeId, votesAmount, phoneNumber, nomineeName , categoryName} =
       getMetadataFields(event.data.metadata);
     const channel = event.data.channel;
 
@@ -64,6 +64,24 @@ export async function POST(req: NextRequest) {
           { error: "Failed to record vote" },
           { status: 500 }
         );
+      }
+
+      if(!error){
+       try {
+        await fetch(`${process.env.NEXT_PUBLIC_SITE_URL}/api/v2/sendsms`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            phone: phoneNumber,
+            nomineeName: nomineeName,
+            categoryName: categoryName
+          })
+        });
+       } catch (error) {
+        console.error("Error sending SMS:", error);
+       }
       }
 
       console.log(
