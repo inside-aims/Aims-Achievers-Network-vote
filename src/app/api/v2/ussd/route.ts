@@ -192,7 +192,7 @@ export async function POST(req: NextRequest) {
           }
 
           const paystackRes = await fetch(
-            `${process.env.NEXT_PUBLIC_SITE_URL}/api/v2/paystack/charge`,
+            `/api/v2/paystack/charge`,
             {
               method: "POST",
               headers: {
