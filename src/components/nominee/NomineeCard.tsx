@@ -80,7 +80,6 @@ const NomineeCard: React.FC<NomineeCardProps> = ({ nominee, showVotes, onRequest
                   className="absolute text-award-gold font-medium text-sm px-3 py-1 border border-award-gold rounded-md
                        hover:bg-award-gold hover:text-black transition-all right-0 bottom-5 disabled:opacity-50 disabled:cursor-not-allowed"
                   onClick={() => router.push(`/vote/${id}`)}
-                  disabled
                 >
                   Vote
                 </motion.button>
