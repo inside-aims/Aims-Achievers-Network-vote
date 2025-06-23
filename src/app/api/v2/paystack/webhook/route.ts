@@ -49,7 +49,8 @@ export async function POST(req: NextRequest) {
 
     // TODO: Insert into Supabase or update vote status
     // await supabase.from('votes').insert({ msisdn, amount, nominee_id: nomineeId, reference, status: 'paid' });
-    if (channel === "mobile_money") {
+    console.log("channel ",channel)
+    if (channel === "mobile_money" && nomineeId && votesAmount) {
       const { error } = await supabase.from("vote").insert({
         referenceID: event.data.reference,
         numberOfVotes: votesAmount,
