@@ -84,3 +84,32 @@ export interface CustomField {
 export interface PaymentMetadata {
   custom_fields?: CustomField[];
 }
+
+
+export interface Nomineee {
+  id: string
+  name: string
+  stage_name: string
+  image: string | null
+  category: {
+    id: string
+    name: string
+  }
+  totalVotes: number
+}
+
+export interface Category {
+  id: string
+  name: string
+  votes: number
+}
+
+export interface CategoryWithNominees extends Category {
+  nominees: Nomineee[]
+}
+
+export interface VoteData {
+  nominees: Nomineee[]
+  categories: Category[]
+  categoriesWithNominees: CategoryWithNominees[]
+}
