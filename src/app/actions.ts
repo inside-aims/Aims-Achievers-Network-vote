@@ -56,3 +56,70 @@ export const getNomineesByCategoryId = cache(
     }));
   }
 );
+
+export async function fetchNomineesWithVotes(eventId: number) {
+  const supabase = await createClient();
+
+  const { data, error } = await supabase
+    .from('nominee')
+    .select(`
+      id,
+      name,
+      stage_name,
+      image,
+      category:categoryid (
+        id,
+        name
+      ),
+      votes:vote (
+        numberOfVotes
+      )
+    `)
+    .eq('eventId', eventId)
+    .eq('approved', true)
+
+  if (error) throw error
+  
+  return data?.map(nominee => ({
+    ...nominee,
+    totalVotes: nominee.votes.reduce((sum, vote) => sum + (vote.numberOfVotes || 0), 0)
+  })).sort((a, b) => b.totalVotes - a.totalVotes) || []
+}
+
+export async function fetchCategoriesWithNominees(eventId: number) {
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from('category')
+    .select(`
+      id,
+      name,
+      nominees:nominee!categoryid (
+        id,
+        name,
+        stage_name,
+        image,
+        votes:vote (
+          numberOfVotes
+        )
+      )
+    `)
+    .eq('eventID', eventId)
+
+  if (error) throw error
+  
+  return data?.map(category => ({
+    id: category.id,
+    name: category.name,
+    votes: category.nominees.reduce((sum, nominee) => 
+      sum + nominee.votes.reduce((voteSum, vote) => voteSum + (vote.numberOfVotes || 0), 0), 0
+    ),
+    nominees: category.nominees.map(nominee => ({
+      id: nominee.id,
+      name: nominee.name,
+      stage_name: nominee.stage_name,
+      image: nominee.image,
+      category: { id: category.id, name: category.name },
+      totalVotes: nominee.votes.reduce((sum, vote) => sum + (vote.numberOfVotes || 0), 0)
+    })).sort((a, b) => b.totalVotes - a.totalVotes)
+  })) || []
+}

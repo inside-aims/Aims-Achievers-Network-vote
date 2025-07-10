@@ -1,24 +1,26 @@
-"use client"
+"use client";
 
-import type React from "react"
+import type React from "react";
 
-
-import { Card } from "@/components/ui/card"
-import { motion } from "framer-motion"
-import Image from "next/image"
-import { useRouter } from "next/navigation"
-import { Eye, EyeOff } from "lucide-react"
-import { Nominee } from "@/lib/types"
-
+import { Card } from "@/components/card";
+import { motion } from "framer-motion";
+import Image from "next/image";
+import { useRouter } from "next/navigation";
+import { Eye, EyeOff } from "lucide-react";
+import { Nominee } from "@/lib/types";
 
 interface NomineeCardProps {
-  nominee: Nominee
-  showVotes: boolean
-  onRequestVerification: (nominee: Nominee) => void
+  nominee: Nominee;
+  showVotes: boolean;
+  onRequestVerification: (nominee: Nominee) => void;
 }
 
-const NomineeCard: React.FC<NomineeCardProps> = ({ nominee, showVotes, onRequestVerification }) => {
-  const router = useRouter()
+const NomineeCard: React.FC<NomineeCardProps> = ({
+  nominee,
+  showVotes,
+  onRequestVerification,
+}) => {
+  const router = useRouter();
 
   if (!nominee) {
     return (
@@ -27,12 +29,12 @@ const NomineeCard: React.FC<NomineeCardProps> = ({ nominee, showVotes, onRequest
           <p>Nominee information unavailable</p>
         </div>
       </Card>
-    )
+    );
   }
 
-  const { id, name, image, shortcode, votes = 0 } = nominee
+  const { id, name, image, shortcode, votes = 0 } = nominee;
 
-  const displayVotes = showVotes ? votes.toString() : "********"
+  const displayVotes = showVotes ? votes.toString() : "********";
 
   return (
     <Card className="relative aspect-[1.58/1] bg-black text-white overflow-hidden">
@@ -57,7 +59,9 @@ const NomineeCard: React.FC<NomineeCardProps> = ({ nominee, showVotes, onRequest
             <div className="relative z-10 flex flex-col justify-between h-full">
               <div className="space-y-1">
                 <h3 className="text-2xl font-medium tracking-tight">{name}</h3>
-                <p className="text-sm text-award-gold">{shortcode || "Nominee"}</p>
+                <p className="text-sm text-award-gold">
+                  {shortcode || "Nominee"}
+                </p>
               </div>
               <div className="text-[12px] flex items-center gap-2">
                 <button
@@ -72,7 +76,11 @@ const NomineeCard: React.FC<NomineeCardProps> = ({ nominee, showVotes, onRequest
               </div>
               <div className="space-y-3">
                 <div className="w-8 h-8">
-                  <svg viewBox="0 0 24 24" className="text-zinc-100/30" fill="currentColor">
+                  <svg
+                    viewBox="0 0 24 24"
+                    className="text-zinc-100/30"
+                    fill="currentColor"
+                  >
                     <path d="M12 2L2 19.7778H22L12 2Z" />
                   </svg>
                 </div>
@@ -90,7 +98,7 @@ const NomineeCard: React.FC<NomineeCardProps> = ({ nominee, showVotes, onRequest
         </div>
       </div>
     </Card>
-  )
-}
+  );
+};
 
-export default NomineeCard
+export default NomineeCard;
