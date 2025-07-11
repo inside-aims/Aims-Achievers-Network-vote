@@ -10,6 +10,7 @@ import { ChartView } from "@/components/dashboard/chart-view"
 //import type { VoteData } from "@/lib/types"
 import { fetchCategoriesWithNominees, fetchNomineesWithVotes } from "@/app/actions"
 import { getSupabaseBrowserClient } from "@/config/client"
+import { DotsSpinner } from "@/components/loaders/Dotspinner"
 
 // Supabase implementation (commented out)
 /*
@@ -257,7 +258,9 @@ useEffect(() => {
  
 
 if(!data || isLoading){
-    return <div>Loading...</div>
+    return <div className=" flex justify-center items-center py-10 ">
+                  <DotsSpinner size={60} />
+                </div>
 }
 
   return (
