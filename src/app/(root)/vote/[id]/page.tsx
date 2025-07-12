@@ -233,6 +233,8 @@ export default function VotePage() {
                       voteCount={voteCount}
                       onSubmit={handleVote}
                       showVotes={nominee.eventId.showVote}
+                      bulkVote={nominee.eventId.bulkVote}
+                      eventId={nominee.eventId.id}
                     />
                   </GlassCard>
                 </div>
