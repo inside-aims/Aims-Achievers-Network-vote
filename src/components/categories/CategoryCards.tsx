@@ -27,6 +27,7 @@ const CategoryCard: React.FC<CategoryCardProps> = ({ category }) => {
           fill
           objectFit="cover"
           className="rounded-t-md"
+          quality={75}
         />
       </div>
 

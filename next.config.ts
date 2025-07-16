@@ -5,6 +5,8 @@ const MAIN_DOMAIN = process.env.NEXT_PUBLIC_MAIN_DOMAIN || 'https://campushonors
 const nextConfig: NextConfig = {
   /* config options here */
   images: {
+    formats: ['image/webp'],
+    minimumCacheTTL: 2678400,
     remotePatterns: [
       {
         protocol: 'https',
@@ -14,6 +16,7 @@ const nextConfig: NextConfig = {
         search: '',
       },
     ],
+    qualities: [75],
   },
   async redirects() {
     return [

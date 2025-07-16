@@ -261,6 +261,7 @@ export default function VotePage() {
                         className="object-cover"
                         sizes="256px"
                         priority
+                        quality={75}
                       />
                       <div className="absolute inset-0 bg-gradient-to-t from-background/50 via-transparent to-transparent" />
                     </div>
@@ -280,6 +281,7 @@ export default function VotePage() {
                         className="object-cover"
                         sizes="(max-width: 768px) 100vw, 50vw"
                         priority
+                        quality={75}
                       />
 
                       <div className="absolute inset-0 bg-gradient-to-t from-background via-transparent to-transparent" />
