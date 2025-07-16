@@ -1,14 +1,16 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Input } from "@/components/ui/input";
+import { Select, SelectItem, SelectTrigger, SelectValue, SelectContent } from "@/components/ui/select";
 // import { AnimatedGradientButton } from "@/components/ui/animation-gradient-button"
 // import { LoadingSpinner } from "@/components/ui/loading-spinner"
 import { motion } from "framer-motion";
 import toast from "react-hot-toast";
 import { PaystackButton } from "react-paystack";
+import { getSupabaseBrowserClient } from "@/config/client";
 
 interface VoteFormProps {
   nomineeName: string;
@@ -16,6 +18,8 @@ interface VoteFormProps {
   shortcode: string | null;
   voteCount: number;
   showVotes: boolean;
+  bulkVote: boolean;
+  eventId: number;
   onSubmit: (
     email: string,
     phone: string,
@@ -31,6 +35,8 @@ export function VoteForm({
   voteCount,
   onSubmit,
   showVotes,
+  bulkVote,
+  eventId,
 }: VoteFormProps) {
   const paystack_pk = process.env.NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY;
   const router = useRouter();
@@ -38,9 +44,36 @@ export function VoteForm({
   const [phone, setPhone] = useState("");
   const [phoneError, setPhoneError] = useState("");
   const [amount, setAmount] = useState<number>(1);
+  const [voteOptions, setVoteOptions] = useState<
+  { amount: number; label: string; votes: number }[]
+>([]);
   // const [emailError, setEmailError] = useState("")
   // const [amountError, setAmountError] = useState("")
   // const [isSubmitting, setIsSubmitting] = useState(false)
+
+  useEffect(() => {
+    const fetchVoteOptions = async () => {
+      if (!bulkVote) return;
+  
+      const supabase = getSupabaseBrowserClient();
+      const { data, error } = await supabase
+        .from("bulkVotes")
+        .select("voteOptions")
+        .eq("eventID", eventId)
+        .single();
+  
+      if (error) {
+        console.error("Failed to fetch bulk vote options", error.message);
+        return;
+      }
+  
+      if (data?.voteOptions) {
+        setVoteOptions(data.voteOptions);
+      }
+    };
+  
+    fetchVoteOptions();
+  }, [bulkVote, eventId]);
 
   if (!paystack_pk) {
     toast.error(
@@ -74,20 +107,14 @@ export function VoteForm({
     let vote = 0;
     try {
       const numAmount = Number(amount);
-      vote = numAmount;
-      // if (numAmount === 20) {
-      //   vote = 60;
-      // } else if (numAmount === 50) {
-      //   vote = 150;
-      // } else if (numAmount === 100) {
-      //   vote = 350;
-      // } else if (numAmount === 200) {
-      //   vote = 675;
-      // } else if (numAmount === 300) {
-      //   vote = 1000;
-      // } else {
-      //   vote = numAmount * 2;
-      // }
+      if (bulkVote) {
+        const selected = voteOptions.find((opt) => opt.amount === numAmount);
+        vote = selected?.votes ?? 0;
+        console.log(vote);
+      } else {
+        vote = numAmount;
+      }
+      
 
       // toast
       // toast(`Initiated the ${numAmount}gh for ${vote} votes package 🎨`, {
@@ -207,7 +234,7 @@ export function VoteForm({
   // you can call this function anything
   const onClose = () => {
     // implementation for  whatever you want to do when the Paystack dialog closed.
-    toast.error(" 🫣 Oops!! Closed Payment card!");
+    toast.error(` 🫣 Oops!! Closed Payment card!`);
     router.refresh();
   };
 
@@ -296,22 +323,43 @@ export function VoteForm({
           </div>
 
           <div>
-            <label
-              htmlFor="amount"
-              className="block text-sm font-medium text-gray-300 mb-1"
-            >
-              Amount (GHS) <span className="text-red-500">*</span>
-            </label>
-            <Input
-              id="amount"
-              type="number"
-              min="1"
-              value={amount}
-              onChange={({ target: { value } }) => setAmount(Number(value))}
-              className="bg-black/30 border-gray-700 text-white placeholder:text-gray-500 focus:ring-2 focus:ring-award-gold focus:border-gray-400/30"
-              required
-            />
-          </div>
+  <label
+    htmlFor="amount"
+    className="block text-sm font-medium text-gray-300 mb-1"
+  >
+    {bulkVote ? "Select Your Vote Package" : "Amount (GHS)"}
+    <span className="text-red-500">*</span>
+  </label>
+
+  {bulkVote ? (
+    <Select
+      value={amount.toString()}
+      onValueChange={(val) => setAmount(Number(val))}
+    >
+      <SelectTrigger className="w-full bg-black/30 border-gray-700 text-white placeholder:text-gray-500 focus:ring-2 focus:ring-award-gold focus:border-gray-400/30">
+        <SelectValue placeholder="Select Your Package" />
+      </SelectTrigger>
+      <SelectContent className="bg-black text-white">
+        {voteOptions.map((option) => (
+          <SelectItem key={option.amount} value={option.amount.toString()}>
+            {option.label}
+          </SelectItem>
+        ))}
+      </SelectContent>
+    </Select>
+  ) : (
+    <Input
+      id="amount"
+      type="number"
+      min="1"
+      value={amount}
+      onChange={({ target: { value } }) => setAmount(Number(value))}
+      className="bg-black/30 border-gray-700 text-white placeholder:text-gray-500 focus:ring-2 focus:ring-award-gold focus:border-gray-400/30"
+      required
+    />
+  )}
+</div>
+
         </div>
       </motion.div>
 
