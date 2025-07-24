@@ -123,7 +123,7 @@ export async function processVote(
     }
 
     // Trigger SMS notification asynchronously
-    fetch(`${process.env.NEXT_PUBLIC_APP_URL}/api/v2/sendsms`, {
+    fetch(`${process.env.NEXT_PUBLIC_SITE_URL}/api/v2/sendsms`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ 
