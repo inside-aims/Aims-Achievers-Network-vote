@@ -81,44 +81,50 @@ export default function VotePage() {
     fetchNomineeData();
   }, [id]);
 
-  const handleVote = async (
-    email: string,
-    phone: string,
-    voteAmount: number,
-    ref: string
-  ) => {
-    if (!nominee) return;
+  // const handleVote = async (
+  //   email: string,
+  //   phone: string,
+  //   voteAmount: number,
+  //   ref: string
+  // ) => {
+  //   if (!nominee) return;
 
-    try {
-      const supabase = getSupabaseBrowserClient();
+  //   try {
+  //     const supabase = getSupabaseBrowserClient();
 
-      // Record the vote
-      const { data, error } = await supabase
-        .from("vote")
-        .insert({
-          nomineeID: nominee.id,
-          referenceID: ref,
-          numberOfVotes: voteAmount,
-          phoneNumber: phone,
-          email: email,
-        })
-        .select() // Add .select() here to return the inserted row(s)
-        .single(); // Use .single() if you expect only one row to be inserted and returned
+  //     // Record the vote
+  //     const { data, error } = await supabase
+  //       .from("vote")
+  //       .insert({
+  //         nomineeID: nominee.id,
+  //         referenceID: ref,
+  //         numberOfVotes: voteAmount,
+  //         phoneNumber: phone,
+  //         email: email,
+  //       })
+  //       .select() // Add .select() here to return the inserted row(s)
+  //       .single(); // Use .single() if you expect only one row to be inserted and returned
 
-      if (error) {
-        throw new Error(error.message);
-      }
+  //     if (error) {
+  //       throw new Error(error.message);
+  //     }
 
-      setIsVoted(true);
-      // Update the vote count by adding the new votes
-      setVoteCount((prevCount) => prevCount + voteAmount);
+  //     setIsVoted(true);
+  //     // Update the vote count by adding the new votes
+  //     setVoteCount((prevCount) => prevCount + voteAmount);
 
-      return data; // Return the data if needed further in the cod
-      // Could add analytics event here
-    } catch (err) {
-      console.error("Error recording vote:", err);
-      throw err;
-    }
+  //     return data; // Return the data if needed further in the cod
+  //     // Could add analytics event here
+  //   } catch (err) {
+  //     console.error("Error recording vote:", err);
+  //     throw err;
+  //   }
+  // };
+
+  const handleVoteSuccess = (newVotes: number) => {
+    setIsVoted(true);
+    // Optimistically update the vote count on the UI
+    setVoteCount((prevCount) => prevCount + newVotes);
   };
 
   if (loading) {
@@ -227,14 +233,15 @@ export default function VotePage() {
 
                   <GlassCard className="p-4 sm:p-6 mb-6">
                     <VoteForm
+                      nomineeId={nominee.id}
                       nomineeName={nominee.name}
                       categoryName={nominee.category.name}
                       shortcode={nominee.shortcode}
                       voteCount={voteCount}
-                      onSubmit={handleVote}
                       showVotes={nominee.eventId.showVote}
                       bulkVote={nominee.eventId.bulkVote}
                       eventId={nominee.eventId.id}
+                      onVoteSuccess={handleVoteSuccess}
                     />
                   </GlassCard>
                 </div>

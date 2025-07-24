@@ -11,8 +11,26 @@ import { motion } from "framer-motion";
 import toast from "react-hot-toast";
 import { PaystackButton } from "react-paystack";
 import { getSupabaseBrowserClient } from "@/config/client";
+import { processVote } from "@/app/actions/vote.action";
+
+// interface VoteFormProps {
+//   nomineeName: string;
+//   categoryName: string;
+//   shortcode: string | null;
+//   voteCount: number;
+//   showVotes: boolean;
+//   bulkVote: boolean;
+//   eventId: number;
+//   onSubmit: (
+//     email: string,
+//     phone: string,
+//     voteAmount: number,
+//     ref: string
+//   ) => Promise<any>;
+// }
 
 interface VoteFormProps {
+  nomineeId: string;
   nomineeName: string;
   categoryName: string;
   shortcode: string | null;
@@ -20,20 +38,16 @@ interface VoteFormProps {
   showVotes: boolean;
   bulkVote: boolean;
   eventId: number;
-  onSubmit: (
-    email: string,
-    phone: string,
-    voteAmount: number,
-    ref: string
-  ) => Promise<any>;
+  onVoteSuccess: (numberOfVotes: number) => void;
 }
 
 export function VoteForm({
+  nomineeId,
   nomineeName,
   categoryName,
   shortcode,
   voteCount,
-  onSubmit,
+  onVoteSuccess,
   showVotes,
   bulkVote,
   eventId,
@@ -99,84 +113,106 @@ export function VoteForm({
     return true;
   };
 
-  const processData = async (reference: string) => {
-    if (!validatePhone(phone)) {
-      return;
-    }
+//   const processData = async (reference: string) => {
+//     if (!validatePhone(phone)) {
+//       return;
+//     }
 
-    let vote = 0;
-    try {
-      const numAmount = Number(amount);
-      if (bulkVote) {
-        const selected = voteOptions.find((opt) => opt.amount === numAmount);
-        vote = selected?.votes ?? 0;
-        console.log(vote);
-      } else {
-        vote = numAmount;
-      }
+//     let vote = 0;
+//     try {
+//       const numAmount = Number(amount);
+//       if (bulkVote) {
+//         const selected = voteOptions.find((opt) => opt.amount === numAmount);
+//         vote = selected?.votes ?? 0;
+//         console.log(vote);
+//       } else {
+//         vote = numAmount;
+//       }
       
 
-      // toast
-      // toast(`Initiated the ${numAmount}gh for ${vote} votes package 🎨`, {
-      //   duration: 6000,
-      //   position: "bottom-center",
+//       // toast
+//       // toast(`Initiated the ${numAmount}gh for ${vote} votes package 🎨`, {
+//       //   duration: 6000,
+//       //   position: "bottom-center",
 
-      //   // styling
-      //   className: "bg-black/60 text-white",
-      //   style: {
-      //     border: "1px solid #ebd534",
-      //     padding: "16px",
-      //     color: "#fff",
-      //     backgroundColor: "#21211f",
-      //   },
+//       //   // styling
+//       //   className: "bg-black/60 text-white",
+//       //   style: {
+//       //     border: "1px solid #ebd534",
+//       //     padding: "16px",
+//       //     color: "#fff",
+//       //     backgroundColor: "#21211f",
+//       //   },
 
-      //   // Custom Icon
-      //   icon: "👏",
-      // });
+//       //   // Custom Icon
+//       //   icon: "👏",
+//       // });
 
 
-      try {
-        const data = await onSubmit(email, phone, vote, reference);
+//       try {
+//         const data = await onSubmit(email, phone, vote, reference);
 
-        // Send SMS after successful vote
-        try {
-          await fetch('/api/v2/sendsms', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-              phone: phone,
-              nomineeName: nomineeName,
-              categoryName: categoryName
-            })
-          });
+//         // Send SMS after successful vote
+//         try {
+//           await fetch('/api/v2/sendsms', {
+//             method: 'POST',
+//             headers: {
+//               'Content-Type': 'application/json',
+//             },
+//             body: JSON.stringify({
+//               phone: phone,
+//               nomineeName: nomineeName,
+//               categoryName: categoryName
+//             })
+//           });
 
-          /*
-          Response Body:  {
-  data: [
-    {
-      id: '35a9c370-31ff-432a-8295-5745b0cdfd09',
-      recipient: '233558218741'
-    }
-  ],
-  status: 'success'
-}
-          */
+//           /*
+//           Response Body:  {
+//   data: [
+//     {
+//       id: '35a9c370-31ff-432a-8295-5745b0cdfd09',
+//       recipient: '233558218741'
+//     }
+//   ],
+//   status: 'success'
+// }
+//           */
 
-        } catch (smsError) {
-          console.error('Failed to send SMS:', smsError);
-          // Don't fail the whole process if SMS fails
-        }
+//         } catch (smsError) {
+//           console.error('Failed to send SMS:', smsError);
+//           // Don't fail the whole process if SMS fails
+//         }
 
-        return data;
-      } catch (error) {
-        throw error;
-      }
-    } catch (error) {
-      throw error;
-    }
-  };
+//         return data;
+//       } catch (error) {
+//         throw error;
+//       }
+//     } catch (error) {
+//       throw error;
+//     }
+//   };
+
+
+ // Function to call the server action, designed to be used with toast.promise
+ const handleServerVoteProcessing = async (reference: string) => {
+  // Call the server action with all necessary details
+  const result = await processVote(
+    reference,
+    nomineeId,
+    email,
+    phone,
+    amount // Pass the GHS amount that was paid
+  );
+
+  if (result.success) {
+    onVoteSuccess(result.numberOfVotes); // Notify parent component to change UI
+    return result.numberOfVotes; // Return data for the toast success message
+  } else {
+    // Throw an error to be caught by toast.promise
+    throw new Error(result.message);
+  }
+};
+
 
   const config = {
     reference: new Date().getTime().toString(),
@@ -186,6 +222,9 @@ export function VoteForm({
     currency: "GHS",
     metadata: {
       custom_fields: [
+        { display_name: "Nominee Name", variable_name: "nominee_name", value: nomineeName },
+        { display_name: "Category Name", variable_name: "category_name", value: categoryName },
+        { display_name: "Nominee ID", variable_name: "nominee_id", value: nomineeId },
         {
           display_name: "Nominee Code",
           variable_name: "Nominee Code",
@@ -201,35 +240,54 @@ export function VoteForm({
   };
 
   // you can call this function anything
-  const onSuccess = (paystackData: any) => {
-    // Implementation for whatever you want to do with reference and after success call.
+  // const onSuccess = (paystackData: any) => {
+  //   // Implementation for whatever you want to do with reference and after success call.
+  //   if (paystackData.status === "success") {
+  //     toast.success("Payment successful 👍");
+  //     toast
+  //       .promise(
+  //         processData(paystackData.reference),
+  //         {
+  //           loading: "Processing your vote...",
+  //           success: (data) =>
+  //             `Successfully voted ${data?.numberOfVotes || "N/A"} votes!`,
+  //           error: (err) =>
+  //             `Vote update failed: ${err.toString()}. Contact support immediately @ 0558218741`,
+  //         },
+  //         {
+  //           style: {
+  //             minWidth: "250px",
+  //           },
+  //           success: {
+  //             duration: 5000,
+  //             icon: "🔥",
+  //           },
+  //         }
+  //       )
+  //       .then(() => {
+  //         setAmount(1);
+  //       });
+  //   }
+  // };
+
+  const onSuccess = (paystackData: { reference: string; status: string }) => {
     if (paystackData.status === "success") {
       toast.success("Payment successful 👍");
-      toast
-        .promise(
-          processData(paystackData.reference),
+      toast.promise(
+          handleServerVoteProcessing(paystackData.reference),
           {
-            loading: "Processing your vote...",
-            success: (data) =>
-              `Successfully voted ${data?.numberOfVotes || "N/A"} votes!`,
-            error: (err) =>
-              `Vote update failed: ${err.toString()}. Contact support immediately @ 0558218741`,
+            loading: "Verifying payment & casting vote...",
+            success: (numberOfVotes) => `Successfully cast ${numberOfVotes} votes! 🎉`,
+            error: (err) => `Vote failed: ${err.message}`,
           },
           {
-            style: {
-              minWidth: "250px",
-            },
-            success: {
-              duration: 5000,
-              icon: "🔥",
-            },
+            success: { duration: 5000, icon: "🔥" },
+            error: { duration: 8000, icon: "🚨" }
           }
-        )
-        .then(() => {
-          setAmount(1);
-        });
+        );
     }
   };
+
 
   // you can call this function anything
   const onClose = () => {
@@ -388,6 +446,7 @@ export function VoteForm({
         <PaystackButton
           className="font-semibold  border-none px-8 py-2 bg-blue-500 hover:bg-blue-400 rounded-full w-full cursor-pointer disabled:cursor-not-allowed disabled:opacity-25 mb-5"
           {...componentProps}
+          disabled={!phone || !!phoneError || !amount}
         />
       </motion.div>
     </div>
