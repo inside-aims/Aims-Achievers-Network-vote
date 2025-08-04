@@ -389,7 +389,7 @@ export function VoteForm({
     <span className="text-red-500">*</span>
   </label>
 
-  {bulkVote ? (
+  {bulkVote && voteCount >= 300  ? (
     <Select
       value={amount.toString()}
       onValueChange={(val) => setAmount(Number(val))}
