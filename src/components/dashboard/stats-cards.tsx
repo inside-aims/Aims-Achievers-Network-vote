@@ -8,10 +8,23 @@ interface StatsCardsProps {
 }
 
 export function StatsCards({ nominees, activeCategories }: StatsCardsProps) {
+  console.log("nominees ", nominees)
   const totalVotes = nominees.reduce(
     (sum, nominee) => sum + nominee.totalVotes,
     0
   );
+  const totalAmount = nominees.reduce(
+    (sum, nominee) => sum + nominee.totalAmount,
+    0
+  );
+
+  // after paystack 1.95%
+  //paystack amount
+  const paystackAmount = totalAmount * 0.02;
+
+  // round it up
+  const totalAmountAfterPaystack = Math.ceil(totalAmount - paystackAmount - 1100 );
+  
   const totalNominees = nominees.length;
   const leadingNominee = nominees[0];
 
@@ -31,6 +44,20 @@ export function StatsCards({ nominees, activeCategories }: StatsCardsProps) {
           <p className="text-xs text-zinc-500 mt-1">
             <span className="text-green-400">+12%</span> from last hour
           </p>
+        </CardContent>
+      </Card>
+
+      <Card className="bg-zinc-900 border-zinc-800">
+        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+          <CardTitle className="text-sm font-medium text-zinc-400">
+            Total Amount (500 GHS already deducted)
+          </CardTitle>
+          <TrendingUp className="h-4 w-4 text-yellow-400" />
+        </CardHeader>
+        <CardContent>
+          <div className="text-2xl font-bold text-yellow-400">
+            {totalAmountAfterPaystack.toLocaleString()}
+          </div>
         </CardContent>
       </Card>
 
