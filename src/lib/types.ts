@@ -95,7 +95,8 @@ export interface Nomineee {
     id: string
     name: string
   }
-  totalVotes: number
+  totalVotes: number,
+  totalAmount: number
 }
 
 export interface Category {

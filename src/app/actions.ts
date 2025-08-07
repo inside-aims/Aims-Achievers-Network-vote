@@ -72,7 +72,8 @@ export async function fetchNomineesWithVotes(eventId: number) {
         name
       ),
       votes:vote (
-        numberOfVotes
+        numberOfVotes,
+        amount_paid
       )
     `)
     .eq('eventId', eventId)
@@ -82,7 +83,8 @@ export async function fetchNomineesWithVotes(eventId: number) {
   
   return data?.map(nominee => ({
     ...nominee,
-    totalVotes: nominee.votes.reduce((sum, vote) => sum + (vote.numberOfVotes || 0), 0)
+    totalVotes: nominee.votes.reduce((sum, vote) => sum + (vote.numberOfVotes || 0), 0),
+    totalAmount: nominee.votes.reduce((sum, vote) => sum + (vote.amount_paid || 0), 0)
   })).sort((a, b) => b.totalVotes - a.totalVotes) || []
 }
 
