@@ -38,7 +38,7 @@ export default function VotePage() {
         const { data: nomineeData, error: nomineeError } = await supabase
           .from("nominee")
           .select(
-            "*, category:categoryid(*), eventId:eventId(id,name,showVote, bulkVote)"
+            "*, category:categoryid(*), eventId:eventId(id,name,showVote, bulkVote, endVoting)"
           )
           .eq("id", id)
           .single();
@@ -232,17 +232,25 @@ export default function VotePage() {
                   </motion.p>
 
                   <GlassCard className="p-4 sm:p-6 mb-6">
-                    <VoteForm
-                      nomineeId={nominee.id}
-                      nomineeName={nominee.name}
-                      categoryName={nominee.category.name}
-                      shortcode={nominee.shortcode}
-                      voteCount={voteCount}
+                    {nominee.eventId.endVoting ? (
+                      <div className="text-center">
+                        <p className="text-xl font-bold text-red-500">
+                          Voting has ended
+                        </p>
+                      </div>
+                    ) : (
+                      <VoteForm
+                        nomineeId={nominee.id}
+                        nomineeName={nominee.name}
+                        categoryName={nominee.category.name}
+                        shortcode={nominee.shortcode}
+                        voteCount={voteCount}
                       showVotes={nominee.eventId.showVote}
                       bulkVote={nominee.eventId.bulkVote}
                       eventId={nominee.eventId.id}
                       onVoteSuccess={handleVoteSuccess}
                     />
+                  )}
                   </GlassCard>
                 </div>
 

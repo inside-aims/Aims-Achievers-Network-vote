@@ -50,6 +50,7 @@ export interface EventDetails {
   name: string;
   bulkVote: boolean;
   showVote: boolean;
+  endVoting: boolean
 }
 
 export interface NomineeCategory {
